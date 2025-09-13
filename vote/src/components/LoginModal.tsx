@@ -233,7 +233,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
 
       {/* 关闭按钮 */}
       <img 
-        src="close.png" 
+        src="https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/close.png" 
         style={{ 
           width: '15px', 
           height: '15px', 

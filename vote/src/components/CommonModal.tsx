@@ -31,7 +31,7 @@ const VoteRulesModal: React.FC<CommonModalProps> = ({ isOpen, mainText, subText,
       <div 
         style={{
           position: 'relative',
-          width: '320px',
+          width: '280px',
           height: '290px',
           backgroundImage: 'url(https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/modalMini.png)',
           backgroundSize: 'contain',
@@ -55,11 +55,11 @@ const VoteRulesModal: React.FC<CommonModalProps> = ({ isOpen, mainText, subText,
           maxHeight: '320px',
           overflowY: 'auto',
         }}>
-            <h3 style={{textAlign : 'center', fontWeight : 500, marginBottom : '14px', fontSize : '20px'}}>{mainText}</h3>
+            <p style={{textAlign : 'center', fontWeight : 500, marginBottom : '14px', fontSize : '16px'}}>{mainText}</p>
             <p>{subText}</p>
         </div>
       </div>
-      <img src="close.png" style={{ width: '15px', height: '15px', position: 'absolute', top: '50%', left: '50%', marginTop : '230px', marginLeft : '-7px', cursor: 'pointer' }} onClick={onClose}></img>
+      <img src="https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/close.png" style={{ width: '15px', height: '15px', position: 'absolute', top: '50%', left: '50%', marginTop : '230px', marginLeft : '-7px', cursor: 'pointer' }} onClick={onClose}></img>
     </div>
   );
 };

@@ -4,11 +4,14 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import VoteRulesModal from '../components/VoteRulesModal';
 import LoginModal from '../components/LoginModal';
+import CommonModal from '@/components/CommonModal';
 import { apiService } from '@/utils/apiService';
 import { UserManager } from '@/utils/userManager';
 
 export default function Home() {
   const router = useRouter();
+  const [modalContent, setModalContent] = useState<string>(''); // 弹窗内容
+  const [isCommonModalOpen, setIsCommonModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
@@ -24,6 +27,7 @@ export default function Home() {
   const [bookList, setBookList] = useState<any[]>([]); // 从API获取的图书列表
   const [loading, setLoading] = useState(true); // 图书列表加载状态
   const [loginStatus, setLoginStatus] = useState(false); // 用户登录状态
+  const [isEnd, setIsEnd] = useState(false); // 投票是否结束
 
   const handleBookClick = (bookId: string) => {
     router.push(`/bookDetail/?bookId=${bookId}`);
@@ -40,6 +44,11 @@ export default function Home() {
       } else {
         // 检查是否已达到剩余票数限制
         if (prev.length >= remainVotes) {
+          // 如果已登录且超过剩余票数，显示提示
+          if (loginStatus) {
+            setModalContent('每日最多投票10本，如需更换，请先取消已选中的图书。');
+            setIsCommonModalOpen(true);
+          }
           return prev; // 不添加新选择，保持原状态
         }
         // 如果未选择且未达到限制，则添加到选择列表
@@ -71,16 +80,29 @@ export default function Home() {
     setIsLoginModalOpen(false);
   }
 
-  const handleLoginSuccess = (user: any) => {
+  const handleLoginSuccess = async (user: any) => {
     console.log('用户登录成功:', user);
     setLoginStatus(true); // 更新登录状态
     fetchBaseInfo(); // 登录成功后获取基础信息
-    fetchVoteInfo(); // 登录成功后获取投票信息
+    const remainVoteNum = await fetchVoteInfo(); // 登录成功后获取投票信息
     refreshBookList(); // 登录成功后刷新图书列表，获取用户投票状态
+    
+    // 登录后检查已选择的书籍数量是否超过剩余票数
+    if (selectedBooks.length > (remainVoteNum || 0)) {
+      setModalContent('每日最多投票10本，如需更换，请先取消已选中的图书。');
+      setIsCommonModalOpen(true);
+    }
   }
 
   // 处理投票逻辑
   const handleVote = async () => {
+
+    if (isEnd) {
+      setModalContent('投票已结束，感谢您的参与！');
+      setIsCommonModalOpen(true);
+      return;
+    }
+
     if (!loginStatus) {
       // 用户未登录，显示登录弹窗
       openLoginModal();
@@ -89,6 +111,13 @@ export default function Home() {
 
     if (selectedBooks.length === 0) {
       alert('请先选择要投票的图书');
+      return;
+    }
+
+    // 检查选择的书籍数量是否超过剩余票数
+    if (selectedBooks.length > remainVotes) {
+      setModalContent('每日最多投票10本，如需更换，请先取消已选中的图书。');
+      setIsCommonModalOpen(true);
       return;
     }
 
@@ -120,8 +149,13 @@ export default function Home() {
     try {
       const response = await apiService.getBaseInfo();
       if (response.code === '0') {
-        console.log('获取基础信息成功:', response.result);
         setLoginStatus(response.result.login_status);
+        setIsEnd(response.result.is_end);
+        // 将 end_time 存储到 localStorage
+        if (response.result.end_time && typeof window !== 'undefined') {
+          localStorage.setItem('vote_end_time', response.result.end_time.toString());
+        }
+        
         // 处理基础信息，比如设置页面标题等
       } else {
         console.error('获取基础信息失败:', response.message.text);
@@ -137,6 +171,7 @@ export default function Home() {
       if (response.code === '0') {
         setRemainVotes(response.result.remain_vote_num);
         console.log('获取投票信息成功:', response.result);
+        return response.result.remain_vote_num;
       }
     } catch (error) {
       console.error('获取投票信息网络错误:', error);
@@ -272,7 +307,7 @@ export default function Home() {
                   width : '336px', 
                   display: "flex", 
                   justifyContent: "space-between", 
-                  alignItems: "flex-end", 
+                  alignItems: "center", 
                   padding : "19px 0", 
                   borderBottom : "1px solid #B3B6B7",
                   cursor: "pointer",
@@ -324,7 +359,7 @@ export default function Home() {
       <div 
         style={{ 
           width: "100%", 
-          background : "#000", 
+          background: remainVotes === 0 ? "#B3B5BD" : "#000", 
           position : "fixed", 
           bottom : "0", 
           left : "0", 
@@ -335,15 +370,21 @@ export default function Home() {
           flexDirection: "column", 
           color : "#fff", 
           fontSize : "14px",
-          cursor: "pointer"
+          cursor: remainVotes === 0 ? "default" : "pointer"
         }}
-        onClick={handleVote}
+        onClick={remainVotes === 0 ? undefined : handleVote}
       >
         <div style={{textAlign : "center"}}>
-          <div>点击投票</div>
-          <div style={{fontSize : '12px', color : '#D9D9D9'}}>
-            今日剩余投票数：{remainVotes}
-          </div>
+          {remainVotes <= 0 ? (
+            <div>今日票数已用完</div>
+          ) : (
+            <>
+              <div>点击投票</div>
+              <div style={{fontSize : '12px', color : '#D9D9D9'}}>
+                今日剩余投票数：{remainVotes}
+              </div>
+            </>
+          )}
         </div>
       </div>
       
@@ -353,7 +394,11 @@ export default function Home() {
         onClose={closeLoginModal} 
         onLoginSuccess={handleLoginSuccess}
       />
-
+      <CommonModal 
+        isOpen={isCommonModalOpen}
+        onClose={() => setIsCommonModalOpen(false)}
+        mainText={modalContent}
+      />
     </div>
   );
 }

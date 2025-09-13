@@ -10,6 +10,21 @@ interface VoteRulesModalProps {
 const VoteRulesModal: React.FC<VoteRulesModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
+  // 格式化时间戳为年月日
+  const formatEndTime = () => {
+    if (typeof window === 'undefined') return '';
+    
+    const endTimeStamp = localStorage.getItem('vote_end_time');
+    if (!endTimeStamp) return '';
+    
+    const date = new Date(parseInt(endTimeStamp) * 1000);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}年${month}月${day}日`;
+  };
+
   return (
     <div 
       style={{
@@ -39,7 +54,7 @@ const VoteRulesModal: React.FC<VoteRulesModalProps> = ({ isOpen, onClose }) => {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          padding: '40px 30px',
+          padding: '20px 30px',
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -52,15 +67,17 @@ const VoteRulesModal: React.FC<VoteRulesModalProps> = ({ isOpen, onClose }) => {
           textAlign: 'left',
           maxHeight: '320px',
           overflowY: 'auto',
+          marginTop : '-20px'
         }}>
             <h3 style={{textAlign : 'center', fontWeight : 500, marginBottom : '14px', fontSize : '20px'}}>投票规则</h3>
 
             <p>1. 每位用户每天最多可以投票10次</p>
             <p>2. 同一本书每天只能投票1次</p>
             <p>3. 每天0点更新投票次数</p>
+            <p>4. 投票截止时间：{formatEndTime()}</p>
         </div>
       </div>
-      <img src="close.png" style={{ width: '15px', height: '15px', position: 'absolute', top: '50%', left: '50%', marginTop : '230px', marginLeft : '-7px', cursor: 'pointer' }} onClick={onClose}></img>
+      <img src="https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/close.png" style={{ width: '15px', height: '15px', position: 'absolute', top: '50%', left: '50%', marginTop : '230px', marginLeft : '-7px', cursor: 'pointer' }} onClick={onClose}></img>
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { apiService } from '@/utils/apiService';
 import { useState, useEffect, Suspense } from 'react';
 import LoginModal from '@/components/LoginModal';
+import CommonModal from '@/components/CommonModal';
 import { UserManager } from '@/utils/userManager';
 
 function BookDetailContent() {
@@ -14,6 +15,16 @@ function BookDetailContent() {
   const [remainVotes, setRemainVotes] = useState(0); // 剩余投票数
   const [loginStatus, setLoginStatus] = useState<boolean>(false); // 登录状态
   const [showLoginModal, setShowLoginModal] = useState(false); // 控制登录弹窗显示
+  const [isEnd, setIsEnd] = useState(false); // 投票是否结束
+
+  const [modalContent, setModalContent] = useState<string>(''); // 弹窗内容
+  const [isCommonModalOpen, setIsCommonModalOpen] = useState(false); // 控制通用弹窗显示
+
+  // 控制登录弹窗显示
+  const openLoginModal = () => setShowLoginModal(true);
+  const closeLoginModal = () => setShowLoginModal(false);
+
+  // 页面加载时获取图书详情和投票信息
 
   useEffect(() => {
     // 首先检查是否已有本地登录状态
@@ -31,7 +42,14 @@ function BookDetailContent() {
     router.back();
   };
 
-  const handleVote = () => {
+  const handleVote = async () => {
+
+    if (isEnd) {
+      setModalContent('投票已结束，感谢您的参与！');
+      setIsCommonModalOpen(true);
+      return;
+    }
+
     if (book?.voted) {
       return; // 已投票则不执行任何操作
     }
@@ -42,8 +60,41 @@ function BookDetailContent() {
       return;
     }
     
-    // 这里可以添加投票逻辑
-    console.log('执行投票操作');
+    // 检查是否有剩余投票数
+    if (remainVotes <= 0) {
+      return;
+    }
+
+    // 获取当前书籍ID
+    const bookId = searchParams.get('bookId');
+    if (!bookId) {
+      alert('图书信息错误，无法投票');
+      return;
+    }
+
+    try {
+      // 调用投票API，传入单本书的ID数组
+      const response = await apiService.submitVoteResult([bookId]);
+      if (response.code === '0') {
+        console.log('投票成功:', response.result);
+        
+        // 更新书籍投票状态和票数
+        setBook((prev: any) => ({
+          ...prev,
+          voted: true,
+          vote_num: prev.vote_num + 1
+        }));
+        
+        // 重新获取投票信息（更新剩余投票数）
+        await fetchVoteInfo();
+      } else {
+        console.error('投票失败:', response.message.text);
+        alert('投票失败：' + response.message.text);
+      }
+    } catch (error) {
+      console.error('投票网络错误:', error);
+      alert('投票失败，请稍后重试');
+    }
   };
 
   const fetchVoteInfo = async () => {
@@ -65,6 +116,7 @@ function BookDetailContent() {
       if (response.code === '0') {
         // 处理基础信息，保存登录状态
         setLoginStatus(response.result.login_status);
+        setIsEnd(response.result.is_end);
         console.log('基础信息:', response.result);
       } else {
         console.error('获取基础信息失败:', response.message.text);
@@ -79,8 +131,9 @@ function BookDetailContent() {
     setLoginStatus(true);
     setShowLoginModal(false);
     console.log('登录成功:', user);
-    // 登录成功后可以直接执行投票操作
-    // handleVote();
+    // 登录成功后重新获取投票信息
+    fetchVoteInfo();
+    fetchBaseInfo();
   };
 
   // 关闭登录弹窗
@@ -223,7 +276,7 @@ function BookDetailContent() {
         onClick={handleVote}
         style={{ 
           width: "100%", 
-          background: book?.voted ? "#B3B5BD" : "#000", 
+          background: book?.voted || remainVotes <= 0 ? "#B3B5BD" : "#000", 
           position: "fixed", 
           bottom: "0", 
           left: "0", 
@@ -234,11 +287,18 @@ function BookDetailContent() {
           flexDirection: "column", 
           color: "#fff", 
           fontSize: "14px",
-          cursor: book?.voted ? "not-allowed" : "pointer"
+          cursor: book?.voted || remainVotes <= 0 ? "not-allowed" : "pointer"
         }}
       >
         <div style={{textAlign: "center"}}>
-          <div>{book?.voted ? "已投票" : "点击投票"}</div>
+          <div>
+            {book?.voted 
+              ? "已投票" 
+              : remainVotes <= 0 
+                ? "今日票数已用完" 
+                : "点击投票"
+            }
+          </div>
           <div style={{fontSize: '12px', color: '#D9D9D9'}}>今日剩余投票数：{remainVotes}</div>
         </div>
       </div>
@@ -250,6 +310,12 @@ function BookDetailContent() {
         isOpen={showLoginModal}
         onClose={handleCloseLoginModal}
         onLoginSuccess={handleLoginSuccess}
+      />
+
+      <CommonModal 
+        isOpen={isCommonModalOpen}
+        onClose={() => setIsCommonModalOpen(false)}
+        mainText={modalContent}
       />
     </div>
   );
