@@ -56,9 +56,8 @@ const VoteRulesModal: React.FC<VoteRulesModalProps> = ({ isOpen, onClose }) => {
             <h3 style={{textAlign : 'center', fontWeight : 500, marginBottom : '14px', fontSize : '20px'}}>投票规则</h3>
 
             <p>1. 每位用户每天最多可以投票10次</p>
-            <p>2. 每本书每天仅可投票1次</p>
+            <p>2. 同一本书每天只能投票1次</p>
             <p>3. 每天0点更新投票次数</p>
-            <p>4. 投票次数不累计</p>
         </div>
       </div>
       <img src="close.png" style={{ width: '15px', height: '15px', position: 'absolute', top: '50%', left: '50%', marginTop : '230px', marginLeft : '-7px', cursor: 'pointer' }} onClick={onClose}></img>

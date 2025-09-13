@@ -1,14 +1,37 @@
 "use client";
 
-import { url } from 'inspector';
 import { useRouter } from 'next/navigation';
+import { apiService } from '@/utils/apiService';
+import { useState, useEffect } from 'react';
 
 export default function BookDetail() {
   const router = useRouter();
+  const [book, setBook] = useState<any>(null); // 图书详情数据
 
   const handleBack = () => {
     router.back();
   };
+
+  const handleVote = () => {
+    if (book?.voted) {
+      return; // 已投票则不执行任何操作
+    }
+    // 这里可以添加投票逻辑
+    console.log('执行投票操作');
+  };
+
+  useEffect(() => {
+    // 页面加载时的逻辑
+    apiService.getBookInfo('32567').then((data) => {
+      if (data.code === '0') {
+        setBook(data.result);
+      } else {
+        console.error('获取图书详情失败:', data.message.text);
+      }
+    }).catch((error) => {
+      console.error('获取图书详情网络错误:', error);
+    });
+  }, []);
 
   return (
     <div>
@@ -100,22 +123,26 @@ export default function BookDetail() {
       </div>
 
       {/* 底部导航 */}
-      <div style={{ 
-        width: "100%", 
-        background: "#000", 
-        position: "fixed", 
-        bottom: "0", 
-        left: "0", 
-        height: "75px", 
-        display: "flex", 
-        justifyContent: "space-around", 
-        alignItems: "center", 
-        flexDirection: "column", 
-        color: "#fff", 
-        fontSize: "14px" 
-      }}>
+      <div 
+        onClick={handleVote}
+        style={{ 
+          width: "100%", 
+          background: book?.voted ? "#B3B5BD" : "#000", 
+          position: "fixed", 
+          bottom: "0", 
+          left: "0", 
+          height: "75px", 
+          display: "flex", 
+          justifyContent: "space-around", 
+          alignItems: "center", 
+          flexDirection: "column", 
+          color: "#fff", 
+          fontSize: "14px",
+          cursor: book?.voted ? "not-allowed" : "pointer"
+        }}
+      >
         <div style={{textAlign: "center"}}>
-          <div>点击投票</div>
+          <div>{book?.voted ? "已投票" : "点击投票"}</div>
           <div style={{fontSize: '12px', color: '#D9D9D9'}}>今日剩余投票数：1</div>
         </div>
       </div>

@@ -12,41 +12,25 @@ export default function Home() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const [remainVotes, setRemainVotes] = useState(10); // 剩余投票数
-
-  const item_list=[
-            {
-                "id": "32567",
-                "rank": 1,
-                "name": "1453：君士坦丁堡的陷落",
-                "intro": "1453年5月，拜占庭首都君士坦丁堡被奥斯曼土耳其帝国攻陷，是世界历史中的一件大事。它不仅代表着拜占庭千年帝国的落幕，新兴伊斯兰强权的崛起，更为欧洲、近东带来了政治、经济、文化上的深刻变化，甚至一度被作为中世纪结束的标志之一。",
-                "author": "[英]史蒂文·朗希曼 Steven Runciman",
-                "editor": "张鹏",
-                "cover_url": "https://cdn-fusion.imgcdn.store/i/2024/dd72febafdca0b75.png",
-                "brand": "汗青堂",
-                "vote_num": 0,
-                "voted": false
-            },
-            {
-                "id": "32568",
-                "rank": 2,
-                "name": "爱的终结",
-                "intro": "&quot;为什么我们不爱了？\n这似乎是一个人人崇尚自由、追求自主的时代，无论男女都可以自行定义自己的爱情样貌，随意选择交往的对象。但更多的选择，并没有为人们带来更高的情感满意度。爱的前景正变得愈发不确定，经历分手和离婚的人也仍然经历着心碎……\n这既是一部关于“心碎”的历史记录，也 是一部批判资本主义和消费文化的学术扛鼎之作。伊娃·易洛思潜心二十年研究，结合社会学、心理学、哲学等相关理论资源，从大量文学作品、社交软件、影视、访谈和咨询中抽取出丰富的案例，为我们展现出现代社会如何影响了人们的情感结构和关系。&quot;",
-                "author": "(法)伊娃·易洛思",
-                "editor": "廖玉笛",
-                "cover_url": "https://cdn-fusion.imgcdn.store/i/2024/3dca6eedb3ecbbd7.jpg",
-                "brand": "浦睿文化",
-                "vote_num": 0,
-                "voted": false
-            }
-        ];
+  const [selectedBooks, setSelectedBooks] = useState<string[]>([]); // 本地选择的书籍ID列表
+  const [bookList, setBookList] = useState<any[]>([]); // 从API获取的图书列表
 
   const handleBookClick = () => {
     router.push('/bookDetail');
   };
 
-  const pickBook = (e: React.MouseEvent) => {
+  const pickBook = (e: React.MouseEvent, bookId: string) => {
     e.stopPropagation(); // 阻止事件冒泡，防止触发父元素的点击事件
-    // 处理选择逻辑
+    
+    setSelectedBooks(prev => {
+      if (prev.includes(bookId)) {
+        // 如果已选择，则取消选择
+        return prev.filter(id => id !== bookId);
+      } else {
+        // 如果未选择，则添加到选择列表
+        return [...prev, bookId];
+      }
+    });
   }
 
   const openModal = () => {
@@ -89,7 +73,7 @@ export default function Home() {
     try {
       const response = await apiService.getVoteInfo();
       if (response.code === '0') {
-        setRemainVotes(response.result.remain_votes);
+        setRemainVotes(response.result.remain_vote_num);
         console.log('获取投票信息成功:', response.result);
       }
     } catch (error) {
@@ -98,9 +82,33 @@ export default function Home() {
     }
   };
 
+  // 获取图书列表数据（第1页到第5页）
+  const fetchBookList = async () => {
+    try {
+      const allBooks: any[] = [];
+      
+      // 依次获取第1页到第5页的数据
+      for (let page = 1; page <= 5; page++) {
+        const response = await apiService.getBookList(page);
+        if (response.code === '0' && response.result?.item_list) {
+          allBooks.push(...response.result.item_list);
+          console.log(`获取第${page}页图书数据成功，共${response.result.item_list.length}本书`);
+        } else {
+          console.error(`获取第${page}页图书数据失败:`, response.message?.text);
+        }
+      }
+      
+      setBookList(allBooks);
+      console.log('所有图书数据获取完成，共', allBooks.length, '本书');
+    } catch (error) {
+      console.error('获取图书列表网络错误:', error);
+    }
+  };
+
   useEffect(() => {
     fetchBaseInfo();
     fetchVoteInfo();
+    fetchBookList(); // 获取图书列表数据
   }, []);
 
   return (
@@ -146,7 +154,7 @@ export default function Home() {
         <div>
 
           {
-            item_list.map((item, index) => (
+            (bookList.length > 0 ? bookList : item_list).map((item, index) => (
               <div 
                 key={item.id}
                 style={{ 
@@ -177,8 +185,12 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div onClick={(e) => { pickBook(e) /* 处理取消选择逻辑 */ }} style={{ position : 'absolute', right : '0', bottom : '18px' }}>
-                  <img src={item.voted ? "checkedgray.png" : "uncheck.png"} style={{ width : "22px", height : "22px", objectFit : "contain" }}></img>
+                <div onClick={(e) => { pickBook(e, item.id) }} style={{ position : 'absolute', right : '0', bottom : '18px' }}>
+                  <img src={
+                    item.voted ? "checkedgray.png" : 
+                    selectedBooks.includes(item.id) ? "checked.png" : 
+                    "uncheck.png"
+                  } style={{ width : "22px", height : "22px", objectFit : "contain" }}></img>
                 </div>
 
               </div>
