@@ -29,7 +29,11 @@ export default function Home() {
         // 如果已选择，则取消选择
         return prev.filter(id => id !== bookId);
       } else {
-        // 如果未选择，则添加到选择列表
+        // 检查是否已达到剩余票数限制
+        if (prev.length >= remainVotes) {
+          return prev; // 不添加新选择，保持原状态
+        }
+        // 如果未选择且未达到限制，则添加到选择列表
         return [...prev, bookId];
       }
     });
@@ -288,7 +292,16 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div onClick={(e) => { pickBook(e, item.id) }} style={{ position : 'absolute', right : '0', bottom : '19px' }}>
+                <div 
+                  onClick={(e) => { pickBook(e, item.id) }} 
+                  style={{ 
+                    position : 'absolute', 
+                    right : '0', 
+                    bottom : '19px',
+                    cursor: item.voted || (selectedBooks.length >= remainVotes && !selectedBooks.includes(item.id)) ? 'not-allowed' : 'pointer',
+                    opacity: item.voted || (selectedBooks.length >= remainVotes && !selectedBooks.includes(item.id)) ? 0.6 : 1
+                  }}
+                >
                   <img src={
                     item.voted ? "checkedgray.png" : 
                     selectedBooks.includes(item.id) ? "checked.png" : 
