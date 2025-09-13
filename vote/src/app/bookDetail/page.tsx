@@ -2,10 +2,10 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { apiService } from '@/utils/apiService';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import LoginModal from '@/components/LoginModal';
 
-export default function BookDetail() {
+function BookDetailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [book, setBook] = useState<any>(null); // 图书详情数据
@@ -244,5 +244,28 @@ export default function BookDetail() {
         onLoginSuccess={handleLoginSuccess}
       />
     </div>
+  );
+}
+
+export default function BookDetail() {
+  return (
+    <Suspense fallback={
+      <div style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        flexDirection: "column"
+      }}>
+        <img 
+          src="Spinner@1x-1.0s-200px-200px.gif" 
+          alt="Loading..." 
+          style={{ width: "100px", height: "100px" }}
+        />
+        <p style={{ marginTop: "20px", color: "#666", fontSize: "14px" }}>正在加载页面...</p>
+      </div>
+    }>
+      <BookDetailContent />
+    </Suspense>
   );
 }

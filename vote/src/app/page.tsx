@@ -18,7 +18,7 @@ export default function Home() {
   const [loginStatus, setLoginStatus] = useState(false); // 用户登录状态
 
   const handleBookClick = (bookId: string) => {
-    router.push(`/bookDetail?bookId=${bookId}`);
+    router.push(`/bookDetail/?bookId=${bookId}`);
   };
 
   const pickBook = (e: React.MouseEvent, bookId: string) => {
@@ -168,6 +168,8 @@ export default function Home() {
   };
 
   useEffect(() => {
+    console.log('页面组件挂载，开始初始化...');
+    
     fetchBaseInfo();
     fetchVoteInfo();
     
@@ -197,6 +199,7 @@ export default function Home() {
     }
     
     // 如果没有缓存，才调用 fetchBookList
+    console.log('没有缓存数据，开始获取图书列表...');
     fetchBookList();
   }, []);
 
