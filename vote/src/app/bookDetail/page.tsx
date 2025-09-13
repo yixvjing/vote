@@ -1,5 +1,6 @@
 "use client";
 
+import { url } from 'inspector';
 import { useRouter } from 'next/navigation';
 
 export default function BookDetail() {
@@ -24,13 +25,38 @@ export default function BookDetail() {
           {/* 图书基本信息 */}
           <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", flexDirection : 'column' }}>
             {/* 图书封面 */}
-            <img 
-              src="/placeHolder.png" 
-              style={{ width: "182px", height: "auto", objectFit: "contain", boxShadow : "0 4px 8px rgba(0, 0, 0, 0.2)" }}
-              alt="图书封面"
-            />
+
+            <div style={{position : 'relative'}}>
+              <div style={{
+                background: "url('tag.png')", 
+                width: "70px", 
+                height: "auto", 
+                backgroundSize: 'contain', 
+                backgroundRepeat: 'no-repeat', 
+                backgroundPosition: 'center',
+                position : 'absolute',
+                top : '15px',
+                left : '-23px',
+                zIndex : 1,
+                color : '#fff',
+                fontSize : '16px',
+                fontWeight : 700,
+                textAlign : 'center',
+                lineHeight : '32px',
+                textIndent : '-5px'
+              }}>
+                01
+              </div>
+
+              <img 
+                src="/placeHolder.png" 
+                style={{ width: "182px", height: "auto", objectFit: "contain", boxShadow : "0 4px 8px rgba(0, 0, 0, 0.2)" }}
+                alt="图书封面"
+              />
+            </div>
             
             <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", alignItems: "center", height: "180px", flex: 1 }}>
+
               <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "12px", marginTop : "20px", color: "#333" }}>
                 《春心》
               </div>

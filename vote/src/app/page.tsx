@@ -178,7 +178,7 @@ export default function Home() {
                 </div>
 
                 <div onClick={(e) => { pickBook(e) /* 处理取消选择逻辑 */ }} style={{ position : 'absolute', right : '0', bottom : '18px' }}>
-                  <img src={item.voted ? "check.png" : "uncheck.png"} style={{ width : "22px", height : "22px", objectFit : "contain" }}></img>
+                  <img src={item.voted ? "checkedgray.png" : "uncheck.png"} style={{ width : "22px", height : "22px", objectFit : "contain" }}></img>
                 </div>
 
               </div>
