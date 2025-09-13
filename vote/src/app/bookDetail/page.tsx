@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { apiService } from '@/utils/apiService';
 import { useState, useEffect, Suspense } from 'react';
 import LoginModal from '@/components/LoginModal';
+import { UserManager } from '@/utils/userManager';
 
 function BookDetailContent() {
   const router = useRouter();
@@ -15,6 +16,13 @@ function BookDetailContent() {
   const [showLoginModal, setShowLoginModal] = useState(false); // 控制登录弹窗显示
 
   useEffect(() => {
+    // 首先检查是否已有本地登录状态
+    const isLoggedIn = UserManager.isLoggedIn();
+    if (isLoggedIn) {
+      console.log('检测到本地登录状态，UID:', UserManager.getUid());
+      setLoginStatus(true);
+    }
+    
     fetchVoteInfo();
     fetchBaseInfo();
   }, []);
@@ -181,7 +189,7 @@ function BookDetailContent() {
               </div>
 
               <p style={{ fontSize: '14px', marginBottom : '2px', color: '#000', marginTop : '18px' }}>作者：{book?.author || "未知"}</p>
-              <p style={{ fontSize: '14px', marginBottom : '2px', color: '#000' }}>品牌：{book?.editor || "未知"}</p>
+              <p style={{ fontSize: '14px', marginBottom : '2px', color: '#000' }}>编辑：{book?.editor || "未知"}</p>
 
             </div>
           </div>

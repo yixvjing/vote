@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:prod": "NODE_ENV=production next build && node fix-static-paths.js",
     "export": "next build && next export",
     "start": "next start"
   },

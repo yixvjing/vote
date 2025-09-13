@@ -1,4 +1,5 @@
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
+import { UserManager } from './userManager';
 
 // 创建 axios 实例
 const apiClient = axios.create({
@@ -12,11 +13,17 @@ const apiClient = axios.create({
 // 请求拦截器
 apiClient.interceptors.request.use(
   (config) => {
-    // 可以在这里添加 token 或其他请求头
-    // const token = localStorage.getItem('token');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    // 自动添加用户UID到请求参数中
+    const uid = UserManager.getUid();
+    if (uid && config.data) {
+      // 为POST请求添加uid
+      if (typeof config.data === 'object') {
+        config.data = { ...config.data, uid };
+      }
+    } else if (uid && config.method === 'get') {
+      // 为GET请求添加uid到query参数
+      config.params = { ...config.params, uid };
+    }
     
     console.log('发送请求:', config);
     return config;

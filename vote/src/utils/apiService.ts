@@ -1,6 +1,7 @@
 // API 服务 - 根据真实接口文档
 
 import { postRequest, getRequest } from './api';
+import { UserManager } from './userManager';
 
 // 通用响应结构
 interface ApiResponse<T = any> {
@@ -98,7 +99,7 @@ export const apiService = {
 
   // 获取基础信息
   getBaseInfo: async (): Promise<ApiResponse<any>> => {
-    return await getRequest<ApiResponse<any>>('/activity/vote/get_base_info');
+    return await postRequest<ApiResponse<any>>('/activity/vote/get_base_info', {});
   },
 
   // 提交投票结果
@@ -126,12 +127,36 @@ export const apiService = {
 
   // 基于验证码登录
   login: async (encryptMobile: string, smsCode: string, countryCode: number = 86): Promise<ApiResponse<LoginResponse>> => {
-    return await postRequest<ApiResponse<LoginResponse>>('/v1/user/login', {
+    const response = await postRequest<ApiResponse<LoginResponse>>('/v1/user/login', {
       login_method: 'sms_code',
       mobile: encryptMobile,
       country_code: countryCode,
       sms_code: smsCode
     });
+    
+    // 登录成功后保存用户信息
+    if (response.code === '0' && response.result?.user) {
+      UserManager.saveUserInfo(response.result.user);
+      console.log('用户信息已保存到localStorage:', response.result.user);
+    }
+    
+    return response;
+  },
+
+  // 检查登录状态
+  isLoggedIn: (): boolean => {
+    return UserManager.isLoggedIn();
+  },
+
+  // 获取当前用户信息
+  getCurrentUser: (): any => {
+    return UserManager.getUserInfo();
+  },
+
+  // 登出
+  logout: (): void => {
+    UserManager.clearUserInfo();
+    console.log('用户已登出，本地存储已清除');
   },
 };
 

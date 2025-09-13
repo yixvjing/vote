@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import VoteRulesModal from '../components/VoteRulesModal';
 import LoginModal from '../components/LoginModal';
 import { apiService } from '@/utils/apiService';
+import { UserManager } from '@/utils/userManager';
 
 export default function Home() {
   const router = useRouter();
@@ -12,7 +13,14 @@ export default function Home() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const [remainVotes, setRemainVotes] = useState(10); // 剩余投票数
-  const [selectedBooks, setSelectedBooks] = useState<string[]>([]); // 本地选择的书籍ID列表
+  const [selectedBooks, setSelectedBooks] = useState<string[]>(() => {
+    // 从 sessionStorage 读取已选择的书籍
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('selectedBooks');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  }); // 本地选择的书籍ID列表
   const [bookList, setBookList] = useState<any[]>([]); // 从API获取的图书列表
   const [loading, setLoading] = useState(true); // 图书列表加载状态
   const [loginStatus, setLoginStatus] = useState(false); // 用户登录状态
@@ -25,17 +33,25 @@ export default function Home() {
     e.stopPropagation(); // 阻止事件冒泡，防止触发父元素的点击事件
     
     setSelectedBooks(prev => {
+      let newSelection;
       if (prev.includes(bookId)) {
         // 如果已选择，则取消选择
-        return prev.filter(id => id !== bookId);
+        newSelection = prev.filter(id => id !== bookId);
       } else {
         // 检查是否已达到剩余票数限制
         if (prev.length >= remainVotes) {
           return prev; // 不添加新选择，保持原状态
         }
         // 如果未选择且未达到限制，则添加到选择列表
-        return [...prev, bookId];
+        newSelection = [...prev, bookId];
       }
+      
+      // 保存到 sessionStorage
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('selectedBooks', JSON.stringify(newSelection));
+      }
+      
+      return newSelection;
     });
   }
 
@@ -60,6 +76,7 @@ export default function Home() {
     setLoginStatus(true); // 更新登录状态
     fetchBaseInfo(); // 登录成功后获取基础信息
     fetchVoteInfo(); // 登录成功后获取投票信息
+    refreshBookList(); // 登录成功后刷新图书列表，获取用户投票状态
   }
 
   // 处理投票逻辑
@@ -79,9 +96,12 @@ export default function Home() {
       const response = await apiService.submitVoteResult(selectedBooks);
       if (response.code === '0') {
         console.log('投票成功:', response.result);
-        alert('投票成功！');
         // 清空选择的图书
         setSelectedBooks([]);
+        // 清空 sessionStorage
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('selectedBooks');
+        }
         // 重新获取投票信息和图书列表
         fetchVoteInfo();
         refreshBookList();
@@ -126,11 +146,6 @@ export default function Home() {
 
   // 清除图书列表缓存并重新获取数据
   const refreshBookList = async () => {
-    try {
-      localStorage.removeItem('bookList');
-    } catch (storageError) {
-      console.warn('清除本地存储失败:', storageError);
-    }
     await fetchBookList();
   };
 
@@ -152,14 +167,7 @@ export default function Home() {
       }
       
       setBookList(allBooks);
-      // 将数据存储到 localStorage
-      try {
-        localStorage.setItem('bookList', JSON.stringify(allBooks));
-        console.log('所有图书数据获取完成，共', allBooks.length, '本书，已缓存到本地存储');
-      } catch (storageError) {
-        console.warn('保存到本地存储失败:', storageError);
-        console.log('所有图书数据获取完成，共', allBooks.length, '本书');
-      }
+      console.log('所有图书数据获取完成，共', allBooks.length, '本书');
     } catch (error) {
       console.error('获取图书列表网络错误:', error);
     } finally {
@@ -169,6 +177,13 @@ export default function Home() {
 
   useEffect(() => {
     console.log('页面组件挂载，开始初始化...');
+    
+    // 首先检查是否已有本地登录状态
+    const isLoggedIn = UserManager.isLoggedIn();
+    if (isLoggedIn) {
+      console.log('检测到本地登录状态，UID:', UserManager.getUid());
+      setLoginStatus(true);
+    }
     
     fetchBaseInfo();
     fetchVoteInfo();
@@ -184,22 +199,8 @@ export default function Home() {
     };
     preloadImages();
     
-    // 检查是否有缓存数据，如果有则直接使用，避免重复请求
-    try {
-      const cachedBookList = localStorage.getItem('bookList');
-      if (cachedBookList) {
-        const parsedBookList = JSON.parse(cachedBookList);
-        setBookList(parsedBookList);
-        setLoading(false);
-        console.log('页面初始化：从缓存加载图书列表，共', parsedBookList.length, '本书');
-        return;
-      }
-    } catch (storageError) {
-      console.warn('页面初始化：读取本地存储失败:', storageError);
-    }
-    
-    // 如果没有缓存，才调用 fetchBookList
-    console.log('没有缓存数据，开始获取图书列表...');
+    // 直接获取图书列表
+    console.log('开始获取图书列表...');
     fetchBookList();
   }, []);
 

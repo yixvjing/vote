@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { apiService } from '../utils/apiService';
+import { UserManager } from '../utils/userManager';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -90,10 +91,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
       
       if (response.code === '0') {
         const user = response.result.user;
-        
-        // 保存用户信息到本地存储
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('isLoggedIn', 'true');
         
         // 调用登录成功回调
         if (onLoginSuccess) {
