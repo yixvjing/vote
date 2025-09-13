@@ -1,44 +1,75 @@
 "use client";
 
 import React, { useState } from 'react';
+import { apiService } from '../utils/apiService';
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onLoginSuccess?: (user: any) => void; // 登录成功回调
 }
 
-const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
+const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess }) => {
   const [phone, setPhone] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [encryptMobile, setEncryptMobile] = useState(''); // 加密手机号
+  const [isLoading, setIsLoading] = useState(false); // 加载状态
 
   if (!isOpen) return null;
 
-  const handleSendCode = () => {
+  const handleSendCode = async () => {
     if (!phone.trim()) {
       alert('请输入手机号');
       return;
     }
     
-    // 这里添加发送验证码的逻辑
-    setIsCodeSent(true);
-    setCountdown(60);
+    // 简单的手机号格式验证
+    const phoneRegex = /^1[3-9]\d{9}$/;
+    if (!phoneRegex.test(phone.trim())) {
+      alert('请输入正确的手机号格式');
+      return;
+    }
     
-    // 倒计时
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          setIsCodeSent(false);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    setIsLoading(true);
+    
+    try {
+      // 调用真实的发送验证码 API
+      const response = await apiService.sendSmsCode(phone.trim());
+      
+      if (response.code === '0') {
+        // 保存加密的手机号，用于登录
+        setEncryptMobile(response.result.encrypt_mobile);
+        
+        // 开始倒计时
+        setIsCodeSent(true);
+        setCountdown(60);
+        
+        const timer = setInterval(() => {
+          setCountdown((prev) => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              setIsCodeSent(false);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        
+        alert('验证码发送成功');
+      } else {
+        alert(response.message.text || '发送验证码失败');
+      }
+    } catch (error) {
+      console.error('发送验证码失败:', error);
+      alert('网络错误，请稍后重试');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!phone.trim()) {
       alert('请输入手机号');
       return;
@@ -47,10 +78,53 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       alert('请输入验证码');
       return;
     }
+    if (!encryptMobile) {
+      alert('请先获取验证码');
+      return;
+    }
     
-    // 这里添加登录逻辑
-    console.log('登录:', { phone, verificationCode });
-    onClose();
+    setIsLoading(true);
+    
+    try {
+      // 调用真实的登录 API
+      const response = await apiService.login(encryptMobile, verificationCode.trim());
+      
+      if (response.code === '0') {
+        const user = response.result.user;
+        
+        // 保存用户信息到本地存储
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('isLoggedIn', 'true');
+        
+        // 显示登录成功消息
+        if (response.message.text) {
+          alert(response.message.text);
+        }
+        
+        // 调用登录成功回调
+        if (onLoginSuccess) {
+          onLoginSuccess(user);
+        }
+        
+        // 关闭弹窗
+        onClose();
+        
+        // 重置表单
+        setPhone('');
+        setVerificationCode('');
+        setEncryptMobile('');
+        setIsCodeSent(false);
+        setCountdown(0);
+        
+      } else {
+        alert(response.message.text || '登录失败');
+      }
+    } catch (error) {
+      console.error('登录失败:', error);
+      alert('网络错误，请稍后重试');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -130,38 +204,39 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           />
           <button
             onClick={handleSendCode}
-            disabled={isCodeSent}
+            disabled={isCodeSent || isLoading}
             style={{
               width: '90px',
               height: '40px',
-              backgroundColor: isCodeSent ? '#999' : '#0D2EA9',
+              backgroundColor: (isCodeSent || isLoading) ? '#999' : '#0D2EA9',
               color: '#fff',
               border: 'none',
               fontSize: '12px',
-              cursor: isCodeSent ? 'not-allowed' : 'pointer',
+              cursor: (isCodeSent || isLoading) ? 'not-allowed' : 'pointer',
               fontWeight: '500',
               flexShrink: 0,
             }}
           >
-            {isCodeSent ? `${countdown}s` : '获取验证码'}
+            {isLoading ? '发送中...' : (isCodeSent ? `${countdown}s` : '获取验证码')}
           </button>
         </div>
 
         {/* 登录按钮 */}
         <button
           onClick={handleLogin}
+          disabled={isLoading}
           style={{
             width: '235px',
             height: '40px',
-            backgroundColor: (phone.trim() && verificationCode.trim()) ? '#0D2EA9' : '#E5E5E5',
-            color: (phone.trim() && verificationCode.trim()) ? '#fff' : '#999',
+            backgroundColor: (phone.trim() && verificationCode.trim() && !isLoading) ? '#0D2EA9' : '#E5E5E5',
+            color: (phone.trim() && verificationCode.trim() && !isLoading) ? '#fff' : '#999',
             border: 'none',
             fontSize: '14px',
-            cursor: 'pointer',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
             fontWeight: '500',
           }}
         >
-          登录
+          {isLoading ? '登录中...' : '登录'}
         </button>
       </div>
 
