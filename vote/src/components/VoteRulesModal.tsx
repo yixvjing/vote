@@ -31,7 +31,7 @@ const VoteRulesModal: React.FC<VoteRulesModalProps> = ({ isOpen, onClose }) => {
           position: 'relative',
           width: '320px',
           height: '310px',
-          backgroundImage: 'url(/modalBig.png)',
+          backgroundImage: 'url(https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/modalBig.png)',
           backgroundSize: 'contain',
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'center',

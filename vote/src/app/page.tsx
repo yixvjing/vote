@@ -175,7 +175,7 @@ export default function Home() {
     
     // 预加载图片
     const preloadImages = () => {
-      const imagesToPreload = ['checked.png', 'checkedgray.png'];
+      const imagesToPreload = ['https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/checked.png', 'https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/checkedgray.png'];
       imagesToPreload.forEach(src => {
         const img = new Image();
         img.src = src;
@@ -210,7 +210,7 @@ export default function Home() {
 
         <div style={{ display: "flex", justifyContent: "center", alignItems: "start", width: "370px", margin: "0 auto" }}>
           <div>
-            <img src="title.svg" alt="Description" />
+            <img src="https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/title.svg" alt="Description" />
             <p style={{ padding : "10px 14px", color : "#fff", fontSize : "12px", lineHeight : "25px" }}>
               我们与LESS品牌始终主张，阅读不应该只有功利目的，阅读的重要目的，可以是悦已。<br/>
               LESS新世相出版奖除了由专业评委选出值得推崇的图书和品牌，也希望与更多阅读者一起完成一次「共同行动」。<br/>
@@ -238,7 +238,7 @@ export default function Home() {
 
       </div>
 
-      <img style={{ width : '100%', height : 'auto', marginTop : '-9px'}} src="bottomWave.png" alt="Description" />
+      <img style={{ width : '100%', height : 'auto', marginTop : '-9px'}} src="https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/bottomWave.png" alt="Description" />
 
 
       <div style={{ background: "#fff", display: "flex", justifyContent: "center", alignItems: "start", width: "370px", margin: "0 auto" }}>
@@ -256,7 +256,7 @@ export default function Home() {
               width: "336px"
             }}>
               <img 
-                src="Spinner@1x-1.0s-200px-200px.gif" 
+                src="https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/Spinner@1x-1.0s-200px-200px.gif" 
                 alt="Loading..." 
                 style={{ width: "80px", height: "80px" }}
               />
@@ -280,7 +280,7 @@ export default function Home() {
                 onClick={() => handleBookClick(item.id)}
               >
 
-                <img src={item.cover_url || "placeHolder.png"} style={{ width : "69px", height : "105px", objectFit : "contain" }}></img>
+                <img src={item.cover_url || "https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/placeHolder.png"} style={{ width : "69px", height : "105px", objectFit : "contain" }}></img>
 
                 <div style={{ display: "flex", flexDirection : "column", justifyContent : "center", alignItems : "flex-start", flex : 1, marginLeft : "22px" }}>
                   <div style={{ fontSize: "16px", fontWeight : 700, marginBottom : "8px" }}>
@@ -306,9 +306,9 @@ export default function Home() {
                   }}
                 >
                   <img src={
-                    item.voted ? "checkedgray.png" : 
-                    selectedBooks.includes(item.id) ? "checked.png" : 
-                    "uncheck.png"
+                    item.voted ? "https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/checkedgray.png" : 
+                    selectedBooks.includes(item.id) ? "https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/checked.png" : 
+                    "https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/uncheck.png"
                   } style={{ width : "22px", height : "22px", objectFit : "contain" }}></img>
                 </div>
 

@@ -110,7 +110,7 @@ function BookDetailContent() {
     <div>
         {/* 返回按钮 */}
         <div style={{ padding: "10px" }} onClick={handleBack}>
-            <img src="back-svgrepo-com.svg" style={{ cursor: "pointer", width: "32px", height: "auto" }}></img>
+            <img src="https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/back-svgrepo-com.svg" style={{ cursor: "pointer", width: "32px", height: "auto" }}></img>
         </div>
         
         {/* Loading 状态 */}
@@ -123,7 +123,7 @@ function BookDetailContent() {
             flexDirection: "column"
           }}>
             <img 
-              src="Spinner@1x-1.0s-200px-200px.gif" 
+              src="https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/Spinner@1x-1.0s-200px-200px.gif" 
               alt="Loading..." 
               style={{ width: "100px", height: "100px" }}
             />
@@ -141,7 +141,7 @@ function BookDetailContent() {
 
             <div style={{position : 'relative'}}>
               <div style={{
-                background: "url('tag.png')", 
+                background: "url('https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/tag.png')", 
                 width: "70px", 
                 height: "auto", 
                 backgroundSize: 'contain', 
@@ -191,7 +191,7 @@ function BookDetailContent() {
 
       </div>
 
-      <img style={{ width : '100%', height : 'auto', marginTop : '-9px'}} src="whiteWave.png" alt="Description" />
+      <img style={{ width : '100%', height : 'auto', marginTop : '-9px'}} src="https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/whiteWave.png" alt="Description" />
 
 
       <div style={{ background: "#efefef", display: "flex", justifyContent: "center", alignItems: "start", margin: "0 auto", paddingBottom: "75px" }}>
@@ -258,7 +258,7 @@ export default function BookDetail() {
         flexDirection: "column"
       }}>
         <img 
-          src="Spinner@1x-1.0s-200px-200px.gif" 
+          src="https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/Spinner@1x-1.0s-200px-200px.gif" 
           alt="Loading..." 
           style={{ width: "100px", height: "100px" }}
         />

@@ -142,7 +142,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
           position: 'relative',
           width: '280px',
           height: '280px',
-          backgroundImage: 'url(/modalMiddle.png)',
+          backgroundImage: 'url(https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/modalMiddle.png)',
           backgroundSize: 'contain',
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'center',
