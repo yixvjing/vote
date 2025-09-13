@@ -14,9 +14,11 @@ export default function Home() {
   const [remainVotes, setRemainVotes] = useState(10); // 剩余投票数
   const [selectedBooks, setSelectedBooks] = useState<string[]>([]); // 本地选择的书籍ID列表
   const [bookList, setBookList] = useState<any[]>([]); // 从API获取的图书列表
+  const [loading, setLoading] = useState(true); // 图书列表加载状态
+  const [loginStatus, setLoginStatus] = useState(false); // 用户登录状态
 
-  const handleBookClick = () => {
-    router.push('/bookDetail');
+  const handleBookClick = (bookId: string) => {
+    router.push(`/bookDetail?bookId=${bookId}`);
   };
 
   const pickBook = (e: React.MouseEvent, bookId: string) => {
@@ -51,8 +53,43 @@ export default function Home() {
 
   const handleLoginSuccess = (user: any) => {
     console.log('用户登录成功:', user);
+    setLoginStatus(true); // 更新登录状态
     fetchBaseInfo(); // 登录成功后获取基础信息
+    fetchVoteInfo(); // 登录成功后获取投票信息
   }
+
+  // 处理投票逻辑
+  const handleVote = async () => {
+    if (!loginStatus) {
+      // 用户未登录，显示登录弹窗
+      openLoginModal();
+      return;
+    }
+
+    if (selectedBooks.length === 0) {
+      alert('请先选择要投票的图书');
+      return;
+    }
+
+    try {
+      const response = await apiService.submitVoteResult(selectedBooks);
+      if (response.code === '0') {
+        console.log('投票成功:', response.result);
+        alert('投票成功！');
+        // 清空选择的图书
+        setSelectedBooks([]);
+        // 重新获取投票信息和图书列表
+        fetchVoteInfo();
+        refreshBookList();
+      } else {
+        console.error('投票失败:', response.message.text);
+        alert('投票失败：' + response.message.text);
+      }
+    } catch (error) {
+      console.error('投票网络错误:', error);
+      alert('投票失败，请稍后重试');
+    }
+  };
 
   // 页面加载时可以获取基础信息
   const fetchBaseInfo = async () => {
@@ -60,6 +97,7 @@ export default function Home() {
       const response = await apiService.getBaseInfo();
       if (response.code === '0') {
         console.log('获取基础信息成功:', response.result);
+        setLoginStatus(response.result.login_status);
         // 处理基础信息，比如设置页面标题等
       } else {
         console.error('获取基础信息失败:', response.message.text);
@@ -82,9 +120,20 @@ export default function Home() {
     }
   };
 
+  // 清除图书列表缓存并重新获取数据
+  const refreshBookList = async () => {
+    try {
+      localStorage.removeItem('bookList');
+    } catch (storageError) {
+      console.warn('清除本地存储失败:', storageError);
+    }
+    await fetchBookList();
+  };
+
   // 获取图书列表数据（第1页到第5页）
   const fetchBookList = async () => {
     try {
+      setLoading(true);
       const allBooks: any[] = [];
       
       // 依次获取第1页到第5页的数据
@@ -99,16 +148,52 @@ export default function Home() {
       }
       
       setBookList(allBooks);
-      console.log('所有图书数据获取完成，共', allBooks.length, '本书');
+      // 将数据存储到 localStorage
+      try {
+        localStorage.setItem('bookList', JSON.stringify(allBooks));
+        console.log('所有图书数据获取完成，共', allBooks.length, '本书，已缓存到本地存储');
+      } catch (storageError) {
+        console.warn('保存到本地存储失败:', storageError);
+        console.log('所有图书数据获取完成，共', allBooks.length, '本书');
+      }
     } catch (error) {
       console.error('获取图书列表网络错误:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchBaseInfo();
     fetchVoteInfo();
-    fetchBookList(); // 获取图书列表数据
+    
+    // 预加载图片
+    const preloadImages = () => {
+      const imagesToPreload = ['checked.png', 'checkedgray.png'];
+      imagesToPreload.forEach(src => {
+        const img = new Image();
+        img.src = src;
+        console.log(`预加载图片: ${src}`);
+      });
+    };
+    preloadImages();
+    
+    // 检查是否有缓存数据，如果有则直接使用，避免重复请求
+    try {
+      const cachedBookList = localStorage.getItem('bookList');
+      if (cachedBookList) {
+        const parsedBookList = JSON.parse(cachedBookList);
+        setBookList(parsedBookList);
+        setLoading(false);
+        console.log('页面初始化：从缓存加载图书列表，共', parsedBookList.length, '本书');
+        return;
+      }
+    } catch (storageError) {
+      console.warn('页面初始化：读取本地存储失败:', storageError);
+    }
+    
+    // 如果没有缓存，才调用 fetchBookList
+    fetchBookList();
   }, []);
 
   return (
@@ -153,8 +238,26 @@ export default function Home() {
 
         <div>
 
-          {
-            (bookList.length > 0 ? bookList : item_list).map((item, index) => (
+          {loading ? (
+            // Loading 状态
+            <div style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: "400px",
+              flexDirection: "column",
+              width: "336px"
+            }}>
+              <img 
+                src="Spinner@1x-1.0s-200px-200px.gif" 
+                alt="Loading..." 
+                style={{ width: "80px", height: "80px" }}
+              />
+              <p style={{ marginTop: "20px", color: "#666", fontSize: "14px" }}>正在加载图书列表...</p>
+            </div>
+          ) : (
+            // 图书列表
+            (bookList.length > 0 ? bookList : []).map((item, index) => (
               <div 
                 key={item.id}
                 style={{ 
@@ -167,12 +270,12 @@ export default function Home() {
                   cursor: "pointer",
                   position : "relative"
                 }}
-                onClick={handleBookClick}
+                onClick={() => handleBookClick(item.id)}
               >
 
                 <img src={item.cover_url || "placeHolder.png"} style={{ width : "69px", height : "105px", objectFit : "contain" }}></img>
 
-                <div style={{ display: "flex", flexDirection : "column", justifyContent : "center", alignItems : "flex-start", height : "105px", flex : 1, marginLeft : "22px" }}>
+                <div style={{ display: "flex", flexDirection : "column", justifyContent : "center", alignItems : "flex-start", flex : 1, marginLeft : "22px" }}>
                   <div style={{ fontSize: "16px", fontWeight : 700, marginBottom : "8px" }}>
                     <span style={{ color: "#0D2EA9" }}>{item.rank.toString().padStart(2, '0')}</span>
                     《{item.name}》
@@ -185,7 +288,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div onClick={(e) => { pickBook(e, item.id) }} style={{ position : 'absolute', right : '0', bottom : '18px' }}>
+                <div onClick={(e) => { pickBook(e, item.id) }} style={{ position : 'absolute', right : '0', bottom : '19px' }}>
                   <img src={
                     item.voted ? "checkedgray.png" : 
                     selectedBooks.includes(item.id) ? "checked.png" : 
@@ -195,7 +298,7 @@ export default function Home() {
 
               </div>
             ))
-          }
+          )}
 
         </div>
         
@@ -217,11 +320,13 @@ export default function Home() {
           fontSize : "14px",
           cursor: "pointer"
         }}
-        onClick={openLoginModal}
+        onClick={handleVote}
       >
         <div style={{textAlign : "center"}}>
           <div>点击投票</div>
-          <div style={{fontSize : '12px', color : '#D9D9D9'}}>今日剩余投票数：{remainVotes}</div>
+          <div style={{fontSize : '12px', color : '#D9D9D9'}}>
+            今日剩余投票数：{remainVotes}
+          </div>
         </div>
       </div>
       

@@ -57,7 +57,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
           });
         }, 1000);
         
-        alert('验证码发送成功');
       } else {
         alert(response.message.text || '发送验证码失败');
       }
@@ -95,11 +94,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
         // 保存用户信息到本地存储
         localStorage.setItem('user', JSON.stringify(user));
         localStorage.setItem('isLoggedIn', 'true');
-        
-        // 显示登录成功消息
-        if (response.message.text) {
-          alert(response.message.text);
-        }
         
         // 调用登录成功回调
         if (onLoginSuccess) {
