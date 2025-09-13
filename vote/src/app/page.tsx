@@ -1,10 +1,14 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import VoteRulesModal from '../components/VoteRulesModal';
+import LoginModal from '../components/LoginModal';
 
 export default function Home() {
   const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const handleBookClick = () => {
     router.push('/bookDetail');
@@ -15,8 +19,25 @@ export default function Home() {
     // 处理选择逻辑
   }
 
+  const openModal = () => {
+    setIsModalOpen(true);
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  }
+
+  const openLoginModal = () => {
+    setIsLoginModalOpen(true);
+  }
+
+  const closeLoginModal = () => {
+    setIsLoginModalOpen(false);
+  }
+
   return (
     <div style={{ paddingBottom: "75px" }}>
+      
       <div style={{ background: "#0D2EA9" }}>
 
         <div style={{ display: "flex", justifyContent: "center", alignItems: "start", width: "370px", margin: "0 auto" }}>
@@ -30,7 +51,18 @@ export default function Home() {
 
               我们邀请你参与投票，选出你最喜欢的10本书。如果哪本书为你带来过愉悦，请你支持它。
             </p>
-            <div style={{ margin: '20px 0', padding : '10px 0', fontSize : '14px', textDecoration : 'underline', textAlign : 'center', color : "#fff" }}>
+            <div 
+              style={{ 
+                margin: '20px 0', 
+                padding : '10px 0', 
+                fontSize : '14px', 
+                textDecoration : 'underline', 
+                textAlign : 'center', 
+                color : "#fff",
+                cursor: 'pointer'
+              }}
+              onClick={openModal}
+            >
               点击查看投票规则
             </div>
           </div>
@@ -83,13 +115,32 @@ export default function Home() {
         
       </div>
 
-      <div style={{ width: "100%", background : "#000", position : "fixed", bottom : "0", left : "0", height : "75px", display : "flex", justifyContent : "space-around", alignItems : "center", flexDirection: "column", color : "#fff", fontSize : "14px" }}>
+      <div 
+        style={{ 
+          width: "100%", 
+          background : "#000", 
+          position : "fixed", 
+          bottom : "0", 
+          left : "0", 
+          height : "75px", 
+          display : "flex", 
+          justifyContent : "space-around", 
+          alignItems : "center", 
+          flexDirection: "column", 
+          color : "#fff", 
+          fontSize : "14px",
+          cursor: "pointer"
+        }}
+        onClick={openLoginModal}
+      >
         <div style={{textAlign : "center"}}>
           <div>点击投票</div>
           <div style={{fontSize : '12px', color : '#D9D9D9'}}>今日剩余投票数：1</div>
         </div>
       </div>
       
+      <VoteRulesModal isOpen={isModalOpen} onClose={closeModal} />
+      <LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} />
 
     </div>
   );
