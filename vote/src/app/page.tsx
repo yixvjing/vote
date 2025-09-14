@@ -28,6 +28,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true); // 图书列表加载状态
   const [loginStatus, setLoginStatus] = useState(false); // 用户登录状态
   const [isEnd, setIsEnd] = useState(false); // 投票是否结束
+  const [subText, setSubText] = useState<string>(''); // 弹窗副文本
 
   const handleBookClick = (bookId: string) => {
     router.push(`/bookDetail/?bookId=${bookId}`);
@@ -110,7 +111,8 @@ export default function Home() {
     }
 
     if (selectedBooks.length === 0) {
-      alert('请先选择要投票的图书');
+      setModalContent('请先选择要投票的图书.');
+      setIsCommonModalOpen(true);
       return;
     }
 
@@ -134,6 +136,9 @@ export default function Home() {
         // 重新获取投票信息和图书列表
         fetchVoteInfo();
         refreshBookList();
+        setModalContent('投票成功。');
+        setSubText('剩余票数：'+{ remainVotes });
+        setIsCommonModalOpen(true);
       } else {
         console.error('投票失败:', response.message.text);
         alert('投票失败：' + response.message.text);
@@ -396,8 +401,13 @@ export default function Home() {
       />
       <CommonModal 
         isOpen={isCommonModalOpen}
-        onClose={() => setIsCommonModalOpen(false)}
+        onClose={() => {
+          setIsCommonModalOpen(false);
+          setModalContent('');
+          setSubText('');
+        }}
         mainText={modalContent}
+        subText={subText}
       />
     </div>
   );

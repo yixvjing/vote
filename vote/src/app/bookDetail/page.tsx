@@ -18,11 +18,9 @@ function BookDetailContent() {
   const [isEnd, setIsEnd] = useState(false); // 投票是否结束
 
   const [modalContent, setModalContent] = useState<string>(''); // 弹窗内容
-  const [isCommonModalOpen, setIsCommonModalOpen] = useState(false); // 控制通用弹窗显示
+  const [subText, setSubText] = useState<string>(''); // 弹窗副文本
 
-  // 控制登录弹窗显示
-  const openLoginModal = () => setShowLoginModal(true);
-  const closeLoginModal = () => setShowLoginModal(false);
+  const [isCommonModalOpen, setIsCommonModalOpen] = useState(false); // 控制通用弹窗显示
 
   // 页面加载时获取图书详情和投票信息
 
@@ -78,15 +76,15 @@ function BookDetailContent() {
       if (response.code === '0') {
         console.log('投票成功:', response.result);
         
-        // 更新书籍投票状态和票数
-        setBook((prev: any) => ({
-          ...prev,
-          voted: true,
-          vote_num: prev.vote_num + 1
-        }));
+        fetchBookInfo(bookId); // 重新获取图书详情（更新投票状态和票数）
         
         // 重新获取投票信息（更新剩余投票数）
         await fetchVoteInfo();
+
+        setModalContent('投票成功。');
+        setSubText('剩余票数：'+ remainVotes);
+        setIsCommonModalOpen(true);
+
       } else {
         console.error('投票失败:', response.message.text);
         alert('投票失败：' + response.message.text);
@@ -140,6 +138,22 @@ function BookDetailContent() {
   const handleCloseLoginModal = () => {
     setShowLoginModal(false);
   };
+
+  const fetchBookInfo = async (bookId: string) => {
+    setLoading(true);
+    try {
+      const data = await apiService.getBookInfo(bookId);
+      if (data.code === '0') {
+        setBook(data.result);
+      } else {
+        console.error('获取图书详情失败:', data.message.text);
+      }
+    } catch (error) {
+      console.error('获取图书详情网络错误:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
   
 
 
@@ -150,17 +164,7 @@ function BookDetailContent() {
     if (bookId) {
       setLoading(true);
       // 使用获取到的bookId调用API
-      apiService.getBookInfo(bookId).then((data) => {
-        if (data.code === '0') {
-          setBook(data.result);
-        } else {
-          console.error('获取图书详情失败:', data.message.text);
-        }
-      }).catch((error) => {
-        console.error('获取图书详情网络错误:', error);
-      }).finally(() => {
-        setLoading(false);
-      });
+      fetchBookInfo(bookId);
     } else {
       console.error('未找到bookId参数');
       setLoading(false);
@@ -314,8 +318,13 @@ function BookDetailContent() {
 
       <CommonModal 
         isOpen={isCommonModalOpen}
-        onClose={() => setIsCommonModalOpen(false)}
+        onClose={() => {
+          setIsCommonModalOpen(false);
+          setModalContent('');
+          setSubText('');
+        }}
         mainText={modalContent}
+        subText={subText}
       />
     </div>
   );
