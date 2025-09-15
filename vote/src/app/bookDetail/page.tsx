@@ -1,11 +1,11 @@
 "use client";
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { apiService } from '@/utils/apiService';
+import { apiService } from '../../utils/apiService';
 import { useState, useEffect, Suspense } from 'react';
-import LoginModal from '@/components/LoginModal';
-import CommonModal from '@/components/CommonModal';
-import { UserManager } from '@/utils/userManager';
+import LoginModal from '../../components/LoginModal';
+import CommonModal from '../../components/CommonModal';
+import { UserManager } from '../../utils/userManager';
 
 function BookDetailContent() {
   const router = useRouter();
@@ -238,7 +238,7 @@ function BookDetailContent() {
             
             <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", alignItems: "center", height: "180px", flex: 1 }}>
 
-              <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "12px", marginTop : "20px", color: "#333" }}>
+              <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "12px", marginTop : "20px", color: "#000" }}>
                 { book?.name }
               </div>
 
@@ -267,7 +267,7 @@ function BookDetailContent() {
           
           {/* 图书简介 */}
           <div style={{ marginBottom: "24px" }}>
-            <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "12px", color: "#333" }}>关于这本书</h3>
+            <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "12px", color: "#000" }}>关于这本书</h3>
             <p style={{ fontSize: "14px", lineHeight: "24px", color: "#666" }}>
               { book?.intro || "暂无简介" }
             </p>

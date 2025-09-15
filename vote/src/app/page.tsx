@@ -4,9 +4,9 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import VoteRulesModal from '../components/VoteRulesModal';
 import LoginModal from '../components/LoginModal';
-import CommonModal from '@/components/CommonModal';
-import { apiService } from '@/utils/apiService';
-import { UserManager } from '@/utils/userManager';
+import CommonModal from '../components/CommonModal';
+import { apiService } from '../utils/apiService';
+import { UserManager } from '../utils/userManager';
 
 export default function Home() {
   const router = useRouter();
@@ -371,12 +371,12 @@ export default function Home() {
                 <img src={item.cover_url || "https://static.thefair.net.cn/activity/vote-book/placeHolder.png"} style={{ width : "69px", height : "105px", objectFit : "contain" }}></img>
 
                 <div style={{ display: "flex", flexDirection : "column", justifyContent : "center", alignItems : "flex-start", flex : 1, marginLeft : "22px" }}>
-                  <div style={{ fontSize: "16px", fontWeight : 700, marginBottom : "8px" }}>
+                  <div style={{ fontSize: "16px", fontWeight : 700, marginBottom : "8px", color : '#000' }}>
                     <span style={{ color: "#0D2EA9" }}>{item.rank.toString().padStart(2, '0')}</span>
                     《{item.name}》
                   </div>
-                  <p style={{ fontSize : '13px' }}>作者：{item.author}</p>
-                  <p style={{ fontSize : '13px' }}>品牌：{item.brand}</p>
+                  <p style={{ fontSize : '13px', color : '#000' }}>作者：{item.author}</p>
+                  <p style={{ fontSize : '13px', color : '#000' }}>品牌：{item.brand}</p>
                   <div style={{ marginTop : '8px', display: "flex", justifyContent : "center", alignItems : "center", border : "2px solid #0D2EA9" }}>
                     <div style={{color : "#0D2EA9", fontWeight : 700, padding: '0 3px'}}>{item.vote_num}</div>
                     <div style={{ background : '#0D2EA9', color : "#fff", fontWeight : 700, paddingLeft : '7px', paddingRight : '5px' }}>票</div>
