@@ -187,15 +187,21 @@ export default function Home() {
   // 智能更新图书列表 - 只更新投票状态，不重新获取整个列表
   const updateBookListVoteStatus = async () => {
     try {
-      // 只获取第一页来检查投票状态变化
-      const response = await apiService.getBookList(1);
-      if (response.code === '0' && response.result?.item_list) {
-        const updatedFirstPageBooks = response.result.item_list;
-        
+      const allUpdatedBooks: any[] = [];
+      
+      // 获取所有页面（第1页到第5页）的数据来更新投票状态
+      for (let page = 1; page <= 5; page++) {
+        const response = await apiService.getBookList(page);
+        if (response.code === '0' && response.result?.item_list) {
+          allUpdatedBooks.push(...response.result.item_list);
+        }
+      }
+      
+      if (allUpdatedBooks.length > 0) {
         setBookList(prevBooks => {
           return prevBooks.map(book => {
             // 查找对应的更新数据
-            const updatedBook = updatedFirstPageBooks.find(updated => updated.id === book.id);
+            const updatedBook = allUpdatedBooks.find(updated => updated.id === book.id);
             if (updatedBook) {
               // 只更新投票相关字段，保持其他数据不变
               return {
