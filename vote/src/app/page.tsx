@@ -86,7 +86,7 @@ export default function Home() {
     setLoginStatus(true); // 更新登录状态
     fetchBaseInfo(); // 登录成功后获取基础信息
     const remainVoteNum = await fetchVoteInfo(); // 登录成功后获取投票信息
-    refreshBookList(); // 登录成功后刷新图书列表，获取用户投票状态
+    updateBookListVoteStatus(); // 登录成功后智能更新图书列表投票状态
     
     // 登录后检查已选择的书籍数量是否超过剩余票数
     if (selectedBooks.length > (remainVoteNum || 0)) {
@@ -135,7 +135,7 @@ export default function Home() {
         }
         // 重新获取投票信息和图书列表
         const newRemainVotes = await fetchVoteInfo();
-        refreshBookList();
+        updateBookListVoteStatus(); // 使用智能更新而不是完整刷新
         setModalContent('投票成功。');
         setSubText('剩余票数：' + (newRemainVotes !== undefined ? newRemainVotes : 0));
         setIsCommonModalOpen(true);
@@ -184,7 +184,36 @@ export default function Home() {
     }
   };
 
-  // 清除图书列表缓存并重新获取数据
+  // 智能更新图书列表 - 只更新投票状态，不重新获取整个列表
+  const updateBookListVoteStatus = async () => {
+    try {
+      // 只获取第一页来检查投票状态变化
+      const response = await apiService.getBookList(1);
+      if (response.code === '0' && response.result?.item_list) {
+        const updatedFirstPageBooks = response.result.item_list;
+        
+        setBookList(prevBooks => {
+          return prevBooks.map(book => {
+            // 查找对应的更新数据
+            const updatedBook = updatedFirstPageBooks.find(updated => updated.id === book.id);
+            if (updatedBook) {
+              // 只更新投票相关字段，保持其他数据不变
+              return {
+                ...book,
+                voted: updatedBook.voted,
+                vote_num: updatedBook.vote_num
+              };
+            }
+            return book;
+          });
+        });
+      }
+    } catch (error) {
+      console.error('更新图书投票状态失败:', error);
+    }
+  };
+
+  // 清除图书列表缓存并重新获取数据（完整刷新，仅在必要时使用）
   const refreshBookList = async () => {
     await fetchBookList();
   };
@@ -247,6 +276,7 @@ export default function Home() {
   // 添加页面可见性监听，当从其他页面返回时刷新数据
   useEffect(() => {
     let isInitialLoad = true;
+    let debounceTimer: NodeJS.Timeout | null = null;
 
     const handleVisibilityChange = () => {
       if (!document.hidden) {
@@ -255,10 +285,18 @@ export default function Home() {
           isInitialLoad = false;
           return;
         }
-        console.log('页面重新获得焦点，刷新投票信息和图书列表...');
-        // 页面重新可见时，刷新投票信息和图书列表
-        fetchVoteInfo();
-        refreshBookList();
+        
+        // 防抖处理，避免频繁触发
+        if (debounceTimer) {
+          clearTimeout(debounceTimer);
+        }
+        
+        debounceTimer = setTimeout(() => {
+          console.log('页面重新获得焦点，刷新投票信息...');
+          // 页面重新可见时，只刷新投票信息和投票状态
+          fetchVoteInfo();
+          updateBookListVoteStatus();
+        }, 300); // 300ms 防抖
       }
     };
 
@@ -267,9 +305,17 @@ export default function Home() {
       if (isInitialLoad) {
         return;
       }
-      console.log('窗口重新获得焦点，刷新投票信息和图书列表...');
-      fetchVoteInfo();
-      refreshBookList();
+      
+      // 防抖处理
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+      
+      debounceTimer = setTimeout(() => {
+        console.log('窗口重新获得焦点，刷新投票信息...');
+        fetchVoteInfo();
+        updateBookListVoteStatus();
+      }, 300);
     };
 
     // 监听页面可见性变化
@@ -286,6 +332,9 @@ export default function Home() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
       clearTimeout(timer);
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
     };
   }, []);
 
