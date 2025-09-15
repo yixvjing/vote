@@ -46,7 +46,7 @@ const VoteRulesModal: React.FC<VoteRulesModalProps> = ({ isOpen, onClose }) => {
           position: 'relative',
           width: '320px',
           height: '310px',
-          backgroundImage: 'url(https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/modalBig.png)',
+          backgroundImage: 'url(https://static.thefair.net.cn/activity/vote-book/modalBig.png)',
           backgroundSize: 'contain',
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'center',
@@ -77,7 +77,7 @@ const VoteRulesModal: React.FC<VoteRulesModalProps> = ({ isOpen, onClose }) => {
             <p>4. 投票截止时间：{formatEndTime()}</p>
         </div>
       </div>
-      <img src="https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/close.png" style={{ width: '15px', height: '15px', position: 'absolute', top: '50%', left: '50%', marginTop : '230px', marginLeft : '-7px', cursor: 'pointer' }} onClick={onClose}></img>
+      <img src="https://static.thefair.net.cn/activity/vote-book/close.png" style={{ width: '15px', height: '15px', position: 'absolute', top: '50%', left: '50%', marginTop : '230px', marginLeft : '-7px', cursor: 'pointer' }} onClick={onClose}></img>
     </div>
   );
 };

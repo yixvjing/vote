@@ -136,7 +136,7 @@ export default function Home() {
         // 重新获取投票信息和图书列表
         const newRemainVotes = await fetchVoteInfo();
         updateBookListVoteStatus(); // 使用智能更新而不是完整刷新
-        setModalContent('投票成功。');
+        setModalContent('投票成功');
         setSubText('剩余票数：' + (newRemainVotes !== undefined ? newRemainVotes : 0));
         setIsCommonModalOpen(true);
       } else {

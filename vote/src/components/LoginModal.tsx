@@ -139,7 +139,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
           position: 'relative',
           width: '300px',
           height: '280px',
-          backgroundImage: 'url(https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/modalMiddle.png)',
+          backgroundImage: 'url(https://static.thefair.net.cn/activity/vote-book/modalMiddle.png)',
           backgroundSize: 'contain',
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'center',
@@ -233,7 +233,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
 
       {/* 关闭按钮 */}
       <img 
-        src="https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/close.png" 
+        src="https://static.thefair.net.cn/activity/vote-book/close.png" 
         style={{ 
           width: '15px', 
           height: '15px', 

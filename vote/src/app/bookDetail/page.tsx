@@ -82,7 +82,7 @@ function BookDetailContent() {
         // 重新获取投票信息（更新剩余投票数）并获取最新值
         const updatedRemainVotes = await fetchVoteInfo();
 
-        setModalContent('投票成功。');
+        setModalContent('投票成功');
         setSubText('剩余票数：'+ updatedRemainVotes);
         setIsCommonModalOpen(true);
 
