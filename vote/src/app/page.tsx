@@ -31,7 +31,7 @@ export default function Home() {
   const [subText, setSubText] = useState<string>(''); // 弹窗副文本
 
   const handleBookClick = (bookId: string) => {
-    router.push(`/bookDetail/?bookId=${bookId}`);
+    window.location.href=(`https://acth5.thefair.net.cn/vote-book/bookDetail/?bookId=${bookId}`)
   };
 
   const pickBook = (e: React.MouseEvent, bookId: string) => {
@@ -294,6 +294,16 @@ export default function Home() {
         
         debounceTimer = setTimeout(() => {
           console.log('页面重新获得焦点，刷新投票信息...');
+          // 检查登录状态是否变化
+          const currentLoginStatus = UserManager.isLoggedIn();
+          if (currentLoginStatus !== loginStatus) {
+            console.log('检测到登录状态变化:', currentLoginStatus ? '已登录' : '未登录');
+            setLoginStatus(currentLoginStatus);
+            if (currentLoginStatus) {
+              // 如果变为登录状态，重新获取投票信息
+              fetchVoteInfo();
+            }
+          }
           // 页面重新可见时，只刷新投票信息和投票状态
           fetchVoteInfo();
           updateBookListVoteStatus();
@@ -314,6 +324,16 @@ export default function Home() {
       
       debounceTimer = setTimeout(() => {
         console.log('窗口重新获得焦点，刷新投票信息...');
+        // 检查登录状态是否变化
+        const currentLoginStatus = UserManager.isLoggedIn();
+        if (currentLoginStatus !== loginStatus) {
+          console.log('检测到登录状态变化:', currentLoginStatus ? '已登录' : '未登录');
+          setLoginStatus(currentLoginStatus);
+          if (currentLoginStatus) {
+            // 如果变为登录状态，重新获取投票信息
+            fetchVoteInfo();
+          }
+        }
         fetchVoteInfo();
         updateBookListVoteStatus();
       }, 300);
@@ -337,7 +357,94 @@ export default function Home() {
         clearTimeout(debounceTimer);
       }
     };
-  }, []);
+  }, [loginStatus]);
+
+  // 监听localStorage变化，实现跨页面登录状态同步
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      // 监听用户UID的变化
+      if (e.key === 'vote_user_uid') {
+        const isLoggedIn = UserManager.isLoggedIn();
+        console.log('检测到localStorage中UID变化，新登录状态:', isLoggedIn ? '已登录' : '未登录');
+        
+        if (isLoggedIn !== loginStatus) {
+          setLoginStatus(isLoggedIn);
+          
+          if (isLoggedIn) {
+            // 用户在其他页面登录了，重新获取投票信息和基础信息
+            console.log('用户在其他页面登录，重新获取数据...');
+            fetchBaseInfo();
+            fetchVoteInfo();
+            updateBookListVoteStatus();
+          } else {
+            // 用户在其他页面登出了，清除相关状态
+            console.log('用户在其他页面登出，清除状态...');
+            setRemainVotes(10);
+            // 清空已选择的书籍
+            setSelectedBooks([]);
+            if (typeof window !== 'undefined') {
+              sessionStorage.removeItem('selectedBooks');
+            }
+          }
+        }
+      }
+      
+      // 监听用户信息的变化
+      if (e.key === 'vote_user_info') {
+        const isLoggedIn = UserManager.isLoggedIn();
+        if (isLoggedIn !== loginStatus) {
+          console.log('检测到localStorage中用户信息变化，新登录状态:', isLoggedIn ? '已登录' : '未登录');
+          setLoginStatus(isLoggedIn);
+          
+          if (isLoggedIn) {
+            fetchBaseInfo();
+            fetchVoteInfo();
+            updateBookListVoteStatus();
+          }
+        }
+      }
+    };
+
+    // 添加localStorage事件监听
+    window.addEventListener('storage', handleStorageChange);
+
+    // 清理函数
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [loginStatus]);
+
+  // 监听自定义事件，用于同一页面内的状态同步
+  useEffect(() => {
+    const handleLoginStateChange = (event: CustomEvent) => {
+      const { isLoggedIn } = event.detail;
+      console.log('收到自定义登录状态变化事件:', isLoggedIn ? '已登录' : '未登录');
+      
+      if (isLoggedIn !== loginStatus) {
+        setLoginStatus(isLoggedIn);
+        
+        if (isLoggedIn) {
+          fetchBaseInfo();
+          fetchVoteInfo();
+          updateBookListVoteStatus();
+        } else {
+          setRemainVotes(10);
+          setSelectedBooks([]);
+          if (typeof window !== 'undefined') {
+            sessionStorage.removeItem('selectedBooks');
+          }
+        }
+      }
+    };
+
+    // 添加自定义事件监听
+    window.addEventListener('loginStateChange', handleLoginStateChange as EventListener);
+
+    // 清理函数
+    return () => {
+      window.removeEventListener('loginStateChange', handleLoginStateChange as EventListener);
+    };
+  }, [loginStatus]);
 
   return (
     <div style={{ paddingBottom: "75px" }}>
@@ -381,7 +488,7 @@ export default function Home() {
 
           <div style={{ width: "370px", margin: "0 auto" }}>
 
-        <div>
+        <div style={{ margin: "0 auto" }}>
 
           {loading ? (
             // Loading 状态
@@ -391,7 +498,8 @@ export default function Home() {
               alignItems: "center",
               minHeight: "400px",
               flexDirection: "column",
-              width: "336px"
+              width: "336px",
+              margin: "0 auto"
             }}>
               <img 
                 src="https://static.thefair.net.cn/activity/vote-book/Spinner@1x-1.0s-200px-200px.gif" 
@@ -413,7 +521,8 @@ export default function Home() {
                   padding : "19px 0", 
                   borderBottom : "1px solid #B3B6B7",
                   cursor: "pointer",
-                  position : "relative"
+                  position : "relative",
+                  margin: '0 auto',
                 }}
                 onClick={() => handleBookClick(item.id)}
               >

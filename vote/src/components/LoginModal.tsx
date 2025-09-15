@@ -137,7 +137,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
       <div 
         style={{
           position: 'relative',
-          width: '280px',
+          width: '300px',
           height: '280px',
           backgroundImage: 'url(https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/modalMiddle.png)',
           backgroundSize: 'contain',
@@ -162,7 +162,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
             height: '40px',
             border: '1px solid #E5E5E5',
             padding: '0 12px',
-            fontSize: '14px',
+            fontSize: '16px',
             marginBottom: '12px',
             outline: 'none',
             backgroundColor: '#F8F8F8',
@@ -187,7 +187,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
               height: '40px',
               border: '1px solid #E5E5E5',
               padding: '0 12px',
-              fontSize: '14px',
+              fontSize: '16px',
               outline: 'none',
               backgroundColor: '#F8F8F8',
               color: '#333',

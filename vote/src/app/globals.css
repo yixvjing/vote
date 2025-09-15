@@ -24,3 +24,23 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* 防止 iOS Safari 自动放大输入框 */
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+  font-size: 16px !important;
+}
+
+/* 防止页面滚动时的橡皮筋效果 */
+body {
+  overscroll-behavior: none;
+}
+
+/* 确保在 iOS 设备上触摸滚动平滑 */
+* {
+  -webkit-overflow-scrolling: touch;
+}

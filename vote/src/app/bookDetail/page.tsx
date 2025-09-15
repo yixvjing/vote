@@ -37,15 +37,8 @@ function BookDetailContent() {
   }, []);
 
   const handleBack = () => {
-    // 检查是否有历史记录，如果没有则跳转到主页
-    if (window.history.length > 1) {
-      router.back();
-    } else {
-      // 获取当前路径，移除 /bookDetail 部分回到主页
-      const currentPath = window.location.pathname;
-      const basePath = currentPath.replace(/\/bookDetail\/?.*$/, '/');
-      window.location.href = basePath;
-    }
+    // 优先使用 router.back() 来保持 SPA 的特性，避免页面重新加载
+    window.location.href="https://acth5.thefair.net.cn/vote-book/"
   };
 
   const handleVote = async () => {
