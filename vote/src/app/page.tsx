@@ -134,10 +134,10 @@ export default function Home() {
           sessionStorage.removeItem('selectedBooks');
         }
         // 重新获取投票信息和图书列表
-        fetchVoteInfo();
+        const newRemainVotes = await fetchVoteInfo();
         refreshBookList();
         setModalContent('投票成功。');
-        setSubText('剩余票数：' + remainVotes);
+        setSubText('剩余票数：' + (newRemainVotes !== undefined ? newRemainVotes : 0));
         setIsCommonModalOpen(true);
       } else {
         console.error('投票失败:', response.message.text);

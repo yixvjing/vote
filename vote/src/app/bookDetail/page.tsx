@@ -78,11 +78,11 @@ function BookDetailContent() {
         
         fetchBookInfo(bookId); // 重新获取图书详情（更新投票状态和票数）
         
-        // 重新获取投票信息（更新剩余投票数）
-        await fetchVoteInfo();
+        // 重新获取投票信息（更新剩余投票数）并获取最新值
+        const updatedRemainVotes = await fetchVoteInfo();
 
         setModalContent('投票成功。');
-        setSubText('剩余票数：'+ remainVotes);
+        setSubText('剩余票数：'+ updatedRemainVotes);
         setIsCommonModalOpen(true);
 
       } else {
@@ -100,11 +100,14 @@ function BookDetailContent() {
       const response = await apiService.getVoteInfo();
       if (response.code === '0') {
         setRemainVotes(response.result.remain_vote_num);
+        return response.result.remain_vote_num; // 返回最新的投票数
       } else {
         console.error('获取投票信息失败:', response.message.text);
+        return remainVotes; // 如果失败，返回当前值
       }
     } catch (error) {
       console.error('获取投票信息网络错误:', error);
+      return remainVotes; // 如果失败，返回当前值
     }
   };
 
