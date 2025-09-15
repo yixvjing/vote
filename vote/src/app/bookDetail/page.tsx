@@ -346,7 +346,7 @@ function BookDetailContent() {
                 lineHeight : '32px',
                 textIndent : '-5px'
               }}>
-                《{book.rank}》
+                {book.rank}
               </div>
 
               <img 
@@ -359,7 +359,7 @@ function BookDetailContent() {
             <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", alignItems: "center", height: "180px", flex: 1 }}>
 
               <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "12px", marginTop : "20px", color: "#000" }}>
-                { book?.name }
+                《{ book?.name }》
               </div>
 
               {/* 投票状态 */}
