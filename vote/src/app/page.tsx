@@ -137,7 +137,7 @@ export default function Home() {
         fetchVoteInfo();
         refreshBookList();
         setModalContent('投票成功。');
-        setSubText('剩余票数：'+{ remainVotes });
+        setSubText('剩余票数：' + remainVotes);
         setIsCommonModalOpen(true);
       } else {
         console.error('投票失败:', response.message.text);
@@ -230,7 +230,7 @@ export default function Home() {
     
     // 预加载图片
     const preloadImages = () => {
-      const imagesToPreload = ['https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/checked.png', 'https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/checkedgray.png'];
+      const imagesToPreload = ['https://static.thefair.net.cn/activity/vote-book/checked.png', 'https://static.thefair.net.cn/activity/vote-book/checkedgray.png'];
       imagesToPreload.forEach(src => {
         const img = new Image();
         img.src = src;
@@ -244,6 +244,51 @@ export default function Home() {
     fetchBookList();
   }, []);
 
+  // 添加页面可见性监听，当从其他页面返回时刷新数据
+  useEffect(() => {
+    let isInitialLoad = true;
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // 跳过首次加载时的可见性变化，避免重复请求
+        if (isInitialLoad) {
+          isInitialLoad = false;
+          return;
+        }
+        console.log('页面重新获得焦点，刷新投票信息和图书列表...');
+        // 页面重新可见时，刷新投票信息和图书列表
+        fetchVoteInfo();
+        refreshBookList();
+      }
+    };
+
+    const handleFocus = () => {
+      // 跳过首次加载时的焦点事件，避免重复请求
+      if (isInitialLoad) {
+        return;
+      }
+      console.log('窗口重新获得焦点，刷新投票信息和图书列表...');
+      fetchVoteInfo();
+      refreshBookList();
+    };
+
+    // 监听页面可见性变化
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // 监听窗口焦点变化
+    window.addEventListener('focus', handleFocus);
+
+    // 设置一个延迟，确保首次加载完成后再开始监听
+    const timer = setTimeout(() => {
+      isInitialLoad = false;
+    }, 1000);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+      clearTimeout(timer);
+    };
+  }, []);
+
   return (
     <div style={{ paddingBottom: "75px" }}>
       
@@ -251,7 +296,7 @@ export default function Home() {
 
         <div style={{ display: "flex", justifyContent: "center", alignItems: "start", width: "370px", margin: "0 auto" }}>
           <div>
-            <img src="https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/title.svg" alt="Description" />
+            <img src="https://static.thefair.net.cn/activity/vote-book/title.svg" alt="Description" />
             <p style={{ padding : "10px 14px", color : "#fff", fontSize : "12px", lineHeight : "25px" }}>
               我们与LESS品牌始终主张，阅读不应该只有功利目的，阅读的重要目的，可以是悦已。<br/>
               LESS新世相出版奖除了由专业评委选出值得推崇的图书和品牌，也希望与更多阅读者一起完成一次「共同行动」。<br/>
@@ -279,10 +324,12 @@ export default function Home() {
 
       </div>
 
-      <img style={{ width : '100%', height : 'auto', marginTop : '-9px'}} src="https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/bottomWave.png" alt="Description" />
+      <img style={{ width : '100%', height : 'auto', marginTop : '-9px'}} src="https://static.thefair.net.cn/activity/vote-book/bottomWave.png" alt="Description" />
 
 
-      <div style={{ background: "#fff", display: "flex", justifyContent: "center", alignItems: "start", width: "370px", margin: "0 auto" }}>
+      <div style={{ background: "#fff", display: "flex", justifyContent: "center", alignItems: "start" }}>
+
+          <div style={{ width: "370px", margin: "0 auto" }}>
 
         <div>
 
@@ -297,7 +344,7 @@ export default function Home() {
               width: "336px"
             }}>
               <img 
-                src="https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/Spinner@1x-1.0s-200px-200px.gif" 
+                src="https://static.thefair.net.cn/activity/vote-book/Spinner@1x-1.0s-200px-200px.gif" 
                 alt="Loading..." 
                 style={{ width: "80px", height: "80px" }}
               />
@@ -321,7 +368,7 @@ export default function Home() {
                 onClick={() => handleBookClick(item.id)}
               >
 
-                <img src={item.cover_url || "https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/placeHolder.png"} style={{ width : "69px", height : "105px", objectFit : "contain" }}></img>
+                <img src={item.cover_url || "https://static.thefair.net.cn/activity/vote-book/placeHolder.png"} style={{ width : "69px", height : "105px", objectFit : "contain" }}></img>
 
                 <div style={{ display: "flex", flexDirection : "column", justifyContent : "center", alignItems : "flex-start", flex : 1, marginLeft : "22px" }}>
                   <div style={{ fontSize: "16px", fontWeight : 700, marginBottom : "8px" }}>
@@ -347,9 +394,9 @@ export default function Home() {
                   }}
                 >
                   <img src={
-                    item.voted ? "https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/checkedgray.png" : 
-                    selectedBooks.includes(item.id) ? "https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/checked.png" : 
-                    "https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/uncheck.png"
+                    item.voted ? "https://static.thefair.net.cn/activity/vote-book/checkedgray.png" : 
+                    selectedBooks.includes(item.id) ? "https://static.thefair.net.cn/activity/vote-book/checked.png" : 
+                    "https://static.thefair.net.cn/activity/vote-book/uncheck.png"
                   } style={{ width : "22px", height : "22px", objectFit : "contain" }}></img>
                 </div>
 
@@ -358,6 +405,8 @@ export default function Home() {
           )}
 
         </div>
+          </div>
+
         
       </div>
 

@@ -17,7 +17,7 @@ fi
 
 echo "构建成功！"
 echo "静态文件已生成在 out/ 目录中"
-echo "所有静态资源路径已修复为正确的OSS路径"
+echo "所有静态资源路径已通过 assetPrefix 自动配置为正确的OSS路径"
 echo ""
 echo "OSS路径结构:"
 echo "- 基础路径: https://static-thefair-bj.oss-cn-beijing.aliyuncs.com/activity/vote-book/"

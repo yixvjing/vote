@@ -4,10 +4,11 @@ const nextConfig: NextConfig = {
   output: 'export',
   trailingSlash: true,
   distDir: 'out',
+  basePath: '/vote-book',
+  assetPrefix: 'https://static.thefair.net.cn/activity/vote-book',
   images: {
     unoptimized: true
   },
-  // 不使用 assetPrefix，在构建后通过脚本处理
 };
 
 export default nextConfig;
