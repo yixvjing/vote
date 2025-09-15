@@ -28,7 +28,6 @@ function BookDetailContent() {
     // 首先检查是否已有本地登录状态
     const isLoggedIn = UserManager.isLoggedIn();
     if (isLoggedIn) {
-      console.log('检测到本地登录状态，UID:', UserManager.getUid());
       setLoginStatus(true);
     }
     
@@ -74,9 +73,7 @@ function BookDetailContent() {
     try {
       // 调用投票API，传入单本书的ID数组
       const response = await apiService.submitVoteResult([bookId]);
-      if (response.code === '0') {
-        console.log('投票成功:', response.result);
-        
+      if (response.code === '0') {        
         fetchBookInfo(bookId); // 重新获取图书详情（更新投票状态和票数）
         
         // 重新获取投票信息（更新剩余投票数）并获取最新值
@@ -119,7 +116,6 @@ function BookDetailContent() {
         // 处理基础信息，保存登录状态
         setLoginStatus(response.result.login_status);
         setIsEnd(response.result.is_end);
-        console.log('基础信息:', response.result);
       } else {
         console.error('获取基础信息失败:', response.message.text);
       }
@@ -132,7 +128,6 @@ function BookDetailContent() {
   const handleLoginSuccess = (user: any) => {
     setLoginStatus(true);
     setShowLoginModal(false);
-    console.log('登录成功:', user);
     // 登录成功后重新获取投票信息
     fetchVoteInfo();
     fetchBaseInfo();
@@ -307,7 +302,9 @@ function BookDetailContent() {
                 : "点击投票"
             }
           </div>
-          <div style={{fontSize: '12px', color: '#D9D9D9'}}>今日剩余投票数：{remainVotes}</div>
+          {
+            book?.voted ? <></> : <div style={{fontSize: '12px', color: '#D9D9D9'}}>今日剩余投票数：{remainVotes}</div>
+          }
         </div>
       </div>
             </>

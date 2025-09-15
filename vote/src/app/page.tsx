@@ -82,7 +82,6 @@ export default function Home() {
   }
 
   const handleLoginSuccess = async (user: any) => {
-    console.log('用户登录成功:', user);
     setLoginStatus(true); // 更新登录状态
     fetchBaseInfo(); // 登录成功后获取基础信息
     const remainVoteNum = await fetchVoteInfo(); // 登录成功后获取投票信息
@@ -111,7 +110,7 @@ export default function Home() {
     }
 
     if (selectedBooks.length === 0) {
-      setModalContent('请先选择要投票的图书.');
+      setModalContent('请先选择图书。');
       setIsCommonModalOpen(true);
       return;
     }
@@ -126,7 +125,6 @@ export default function Home() {
     try {
       const response = await apiService.submitVoteResult(selectedBooks);
       if (response.code === '0') {
-        console.log('投票成功:', response.result);
         // 清空选择的图书
         setSelectedBooks([]);
         // 清空 sessionStorage
@@ -137,7 +135,7 @@ export default function Home() {
         const newRemainVotes = await fetchVoteInfo();
         updateBookListVoteStatus(); // 使用智能更新而不是完整刷新
         setModalContent('投票成功');
-        setSubText('剩余票数：' + (newRemainVotes !== undefined ? newRemainVotes : 0));
+        setSubText('今日剩余投票数：' + (newRemainVotes !== undefined ? newRemainVotes : 0));
         setIsCommonModalOpen(true);
       } else {
         console.error('投票失败:', response.message.text);
@@ -175,12 +173,40 @@ export default function Home() {
       const response = await apiService.getVoteInfo();
       if (response.code === '0') {
         setRemainVotes(response.result.remain_vote_num);
-        console.log('获取投票信息成功:', response.result);
         return response.result.remain_vote_num;
       }
     } catch (error) {
       console.error('获取投票信息网络错误:', error);
       return 0;
+    }
+  };
+
+  // 清理localStorage中已投票的书籍
+  const cleanupVotedBooksFromStorage = (updatedBooks: any[]) => {
+    if (typeof window !== 'undefined') {
+      const savedSelection = sessionStorage.getItem('selectedBooks');
+      if (savedSelection) {
+        try {
+          const selectedBookIds = JSON.parse(savedSelection);
+          // 找出已投票的书籍ID
+          const votedBookIds = updatedBooks
+            .filter(book => book.voted)
+            .map(book => book.id);
+          
+          // 从选择列表中移除已投票的书籍
+          const cleanedSelection = selectedBookIds.filter((bookId: string) => 
+            !votedBookIds.includes(bookId)
+          );
+          
+          // 更新localStorage和state
+          if (cleanedSelection.length !== selectedBookIds.length) {
+            sessionStorage.setItem('selectedBooks', JSON.stringify(cleanedSelection));
+            setSelectedBooks(cleanedSelection);
+          }
+        } catch (error) {
+          console.error('清理localStorage选择记录失败:', error);
+        }
+      }
     }
   };
 
@@ -198,6 +224,9 @@ export default function Home() {
       }
       
       if (allUpdatedBooks.length > 0) {
+        // 清理localStorage中已投票的书籍
+        cleanupVotedBooksFromStorage(allUpdatedBooks);
+        
         setBookList(prevBooks => {
           return prevBooks.map(book => {
             // 查找对应的更新数据
@@ -230,14 +259,15 @@ export default function Home() {
         const response = await apiService.getBookList(page);
         if (response.code === '0' && response.result?.item_list) {
           allBooks.push(...response.result.item_list);
-          console.log(`获取第${page}页图书数据成功，共${response.result.item_list.length}本书`);
         } else {
           console.error(`获取第${page}页图书数据失败:`, response.message?.text);
         }
       }
       
       setBookList(allBooks);
-      console.log('所有图书数据获取完成，共', allBooks.length, '本书');
+      
+      // 获取图书列表后，清理localStorage中已投票的书籍
+      cleanupVotedBooksFromStorage(allBooks);
     } catch (error) {
       console.error('获取图书列表网络错误:', error);
     } finally {
@@ -246,12 +276,10 @@ export default function Home() {
   };
 
   useEffect(() => {
-    console.log('页面组件挂载，开始初始化...');
     
     // 首先检查是否已有本地登录状态
     const isLoggedIn = UserManager.isLoggedIn();
     if (isLoggedIn) {
-      console.log('检测到本地登录状态，UID:', UserManager.getUid());
       setLoginStatus(true);
     }
     
@@ -264,13 +292,11 @@ export default function Home() {
       imagesToPreload.forEach(src => {
         const img = new Image();
         img.src = src;
-        console.log(`预加载图片: ${src}`);
       });
     };
     preloadImages();
     
     // 直接获取图书列表
-    console.log('开始获取图书列表...');
     fetchBookList();
   }, []);
 
@@ -293,11 +319,9 @@ export default function Home() {
         }
         
         debounceTimer = setTimeout(() => {
-          console.log('页面重新获得焦点，刷新投票信息...');
           // 检查登录状态是否变化
           const currentLoginStatus = UserManager.isLoggedIn();
           if (currentLoginStatus !== loginStatus) {
-            console.log('检测到登录状态变化:', currentLoginStatus ? '已登录' : '未登录');
             setLoginStatus(currentLoginStatus);
             if (currentLoginStatus) {
               // 如果变为登录状态，重新获取投票信息
@@ -323,11 +347,9 @@ export default function Home() {
       }
       
       debounceTimer = setTimeout(() => {
-        console.log('窗口重新获得焦点，刷新投票信息...');
         // 检查登录状态是否变化
         const currentLoginStatus = UserManager.isLoggedIn();
         if (currentLoginStatus !== loginStatus) {
-          console.log('检测到登录状态变化:', currentLoginStatus ? '已登录' : '未登录');
           setLoginStatus(currentLoginStatus);
           if (currentLoginStatus) {
             // 如果变为登录状态，重新获取投票信息
@@ -365,20 +387,15 @@ export default function Home() {
       // 监听用户UID的变化
       if (e.key === 'vote_user_uid') {
         const isLoggedIn = UserManager.isLoggedIn();
-        console.log('检测到localStorage中UID变化，新登录状态:', isLoggedIn ? '已登录' : '未登录');
         
         if (isLoggedIn !== loginStatus) {
           setLoginStatus(isLoggedIn);
           
           if (isLoggedIn) {
-            // 用户在其他页面登录了，重新获取投票信息和基础信息
-            console.log('用户在其他页面登录，重新获取数据...');
             fetchBaseInfo();
             fetchVoteInfo();
             updateBookListVoteStatus();
           } else {
-            // 用户在其他页面登出了，清除相关状态
-            console.log('用户在其他页面登出，清除状态...');
             setRemainVotes(10);
             // 清空已选择的书籍
             setSelectedBooks([]);
@@ -393,7 +410,6 @@ export default function Home() {
       if (e.key === 'vote_user_info') {
         const isLoggedIn = UserManager.isLoggedIn();
         if (isLoggedIn !== loginStatus) {
-          console.log('检测到localStorage中用户信息变化，新登录状态:', isLoggedIn ? '已登录' : '未登录');
           setLoginStatus(isLoggedIn);
           
           if (isLoggedIn) {
@@ -418,7 +434,6 @@ export default function Home() {
   useEffect(() => {
     const handleLoginStateChange = (event: CustomEvent) => {
       const { isLoggedIn } = event.detail;
-      console.log('收到自定义登录状态变化事件:', isLoggedIn ? '已登录' : '未登录');
       
       if (isLoggedIn !== loginStatus) {
         setLoginStatus(isLoggedIn);
