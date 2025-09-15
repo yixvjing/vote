@@ -6,6 +6,39 @@ import { useState, useEffect, Suspense } from 'react';
 import LoginModal from '../../components/LoginModal';
 import CommonModal from '../../components/CommonModal';
 import { UserManager } from '../../utils/userManager';
+import axios from 'axios';
+
+// 声明微信 JS-SDK 类型
+declare global {
+  interface Window {
+    wx: {
+      config: (config: {
+        appId: string;
+        timestamp: string;
+        nonceStr: string;
+        signature: string;
+        jsApiList: string[];
+      }) => void;
+      ready: (callback: () => void) => void;
+      error: (callback: (error: any) => void) => void;
+      updateTimelineShareData: (config: {
+        title: string;
+        link: string;
+        imgUrl: string;
+        success?: () => void;
+        cancel?: () => void;
+      }) => void;
+      updateAppMessageShareData: (config: {
+        title: string;
+        desc: string;
+        link: string;
+        imgUrl: string;
+        success?: () => void;
+        cancel?: () => void;
+      }) => void;
+    };
+  }
+}
 
 function BookDetailContent() {
   const router = useRouter();
@@ -23,6 +56,91 @@ function BookDetailContent() {
   const [isCommonModalOpen, setIsCommonModalOpen] = useState(false); // 控制通用弹窗显示
 
   // 页面加载时获取图书详情和投票信息
+
+  // 微信分享初始化函数
+  const initWechatShare = async (bookName?: string) => {
+    try {
+        // 1. 调用接口获取微信配置签名
+        const response = await axios.get('https://api.thefair.net.cn/wechat/open/get_wechat_sign', {
+            params: {
+                app_label: 'Subscribe',
+                url: window.location.href
+            },
+            withCredentials: true // 携带Cookie
+        });
+        
+        const data = response.data;
+        
+        // 2. 配置微信JS-SDK
+        window.wx.config({
+            appId: data.result.appId,
+            timestamp: data.result.timestamp,
+            nonceStr: data.result.nonceStr,
+            signature: data.result.signature,
+            jsApiList: ['updateTimelineShareData', 'updateAppMessageShareData']
+        });
+        
+        // 3. 错误处理
+        window.wx.error((error) => {
+            console.error('wx.error: ', error);
+        });
+        
+        // 4. 微信ready回调，设置分享内容
+        window.wx.ready(() => {
+            // 根据是否有书名来设置分享标题
+            const shareTitle = bookName ? `为《${bookName}》投一票` : '在每一条小路上发现未来';
+            
+            // 朋友圈分享配置
+            window.wx.updateTimelineShareData({
+                title: shareTitle,
+                link: window.location.href,
+                imgUrl: 'https://static.thefair.net.cn/activity/vote-book/images/share.jpg',
+                success: () => {
+                    console.log('朋友圈分享成功');
+                },
+                cancel: () => {
+                    console.log('朋友圈分享取消');
+                }
+            });
+            
+            // 微信好友分享配置
+            window.wx.updateAppMessageShareData({
+                title: shareTitle,
+                desc: '快来参加LESS新世相出版奖悦已榜投票，让你喜欢的书被更多人看到!',
+                link: window.location.href,
+                imgUrl: 'https://static.thefair.net.cn/activity/vote-book/images/share.jpg',
+                success: () => {
+                    console.log('好友分享成功');
+                },
+                cancel: () => {
+                    console.log('好友分享取消');
+                }
+            });
+        });
+        
+    } catch (error) {
+        console.error('微信分享初始化失败:', error);
+        if (error.response?.data?.message?.text) {
+            console.error('错误信息:', error.response.data.message.text);
+        }
+    }
+  };
+
+  useEffect(() => {
+    // 页面显示事件处理（防止页面缓存）
+    const handlePageShow = (event) => {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    };
+    
+    window.addEventListener('pageshow', handlePageShow);
+    
+    // 清理函数
+    return () => {
+        window.removeEventListener('pageshow', handlePageShow);
+    };
+}, []);
 
   useEffect(() => {
     // 首先检查是否已有本地登录状态
@@ -144,11 +262,17 @@ function BookDetailContent() {
       const data = await apiService.getBookInfo(bookId);
       if (data.code === '0') {
         setBook(data.result);
+        // 获取到书籍信息后，初始化微信分享
+        initWechatShare(data.result.name);
       } else {
         console.error('获取图书详情失败:', data.message.text);
+        // 如果获取书籍信息失败，使用默认分享配置
+        initWechatShare();
       }
     } catch (error) {
       console.error('获取图书详情网络错误:', error);
+      // 如果获取书籍信息失败，使用默认分享配置
+      initWechatShare();
     } finally {
       setLoading(false);
     }
@@ -303,7 +427,7 @@ function BookDetailContent() {
             }
           </div>
           {
-            book?.voted ? <></> : <div style={{fontSize: '12px', color: '#D9D9D9'}}>今日剩余投票数：{remainVotes}</div>
+            book?.voted ? <></> : <div style={{fontSize: '12px', color: '#D9D9D9', opacity:0.5}}>今日剩余投票数：{remainVotes}</div>
           }
         </div>
       </div>

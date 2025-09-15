@@ -7,6 +7,7 @@ import LoginModal from '../components/LoginModal';
 import CommonModal from '../components/CommonModal';
 import { apiService } from '../utils/apiService';
 import { UserManager } from '../utils/userManager';
+import axios from 'axios';
 
 export default function Home() {
   const router = useRouter();
@@ -29,6 +30,91 @@ export default function Home() {
   const [loginStatus, setLoginStatus] = useState(false); // 用户登录状态
   const [isEnd, setIsEnd] = useState(false); // 投票是否结束
   const [subText, setSubText] = useState<string>(''); // 弹窗副文本
+
+  useEffect(() => {
+    // 微信分享初始化
+    const initWechatShare = async () => {
+        try {
+            // 1. 调用接口获取微信配置签名
+            const response = await axios.get('https://api.thefair.net.cn/wechat/open/get_wechat_sign', {
+                params: {
+                    app_label: 'Subscribe',
+                    url: window.location.href
+                },
+                withCredentials: true // 携带Cookie
+            });
+            
+            const data = response.data;
+            
+            // 2. 配置微信JS-SDK
+            window.wx.config({
+                appId: data.result.appId,
+                timestamp: data.result.timestamp,
+                nonceStr: data.result.nonceStr,
+                signature: data.result.signature,
+                jsApiList: ['updateTimelineShareData', 'updateAppMessageShareData']
+            });
+            
+            // 3. 错误处理
+            window.wx.error((error) => {
+                console.error('wx.error: ', error);
+            });
+            
+            // 4. 微信ready回调，设置分享内容
+            window.wx.ready(() => {
+                // 朋友圈分享配置
+                window.wx.updateTimelineShareData({
+                    title: '在每一条小路上发现未来',
+                    link: window.location.href,
+                    imgUrl: 'https://static.thefair.net.cn/activity/vote-book/share.jpg',
+                    success: () => {
+                        console.log('朋友圈分享成功');
+                    },
+                    cancel: () => {
+                        console.log('朋友圈分享取消');
+                    }
+                });
+                
+                // 微信好友分享配置
+                window.wx.updateAppMessageShareData({
+                    title: '在每一条小路上发现未来',
+                    desc: 'LESS新世相出版奖悦已榜投票通道',
+                    link: window.location.href,
+                    imgUrl: 'https://static.thefair.net.cn/activity/vote-book/share.jpg',
+                    success: () => {
+                        console.log('好友分享成功');
+                    },
+                    cancel: () => {
+                        console.log('好友分享取消');
+                    }
+                });
+            });
+            
+        } catch (error) {
+            console.error('微信分享初始化失败:', error);
+            if (error.response?.data?.message?.text) {
+                console.error('错误信息:', error.response.data.message.text);
+            }
+        }
+    };
+    
+    // 执行微信分享初始化
+    initWechatShare();
+    
+    // 页面显示事件处理（防止页面缓存）
+    const handlePageShow = (event) => {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    };
+    
+    window.addEventListener('pageshow', handlePageShow);
+    
+    // 清理函数
+    return () => {
+        window.removeEventListener('pageshow', handlePageShow);
+    };
+}, []);
 
   const handleBookClick = (bookId: string) => {
     window.location.href=(`https://acth5.thefair.net.cn/vote-book/bookDetail/?bookId=${bookId}`)
@@ -608,7 +694,7 @@ export default function Home() {
           ) : (
             <>
               <div>点击投票</div>
-              <div style={{fontSize : '12px', color : '#D9D9D9'}}>
+              <div style={{fontSize : '12px', color : '#D9D9D9', opacity:0.5}}>
                 今日剩余投票数：{remainVotes}
               </div>
             </>

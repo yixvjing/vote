@@ -35,33 +35,38 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
     
     setIsLoading(true);
     
-    // 调用真实的发送验证码 API
-    const response = await apiService.sendSmsCode(phone.trim());
-    
-    if (response.code === '0') {
-      // 保存加密的手机号，用于登录
-      setEncryptMobile(response.result.encrypt_mobile);
+    try {
+      // 调用真实的发送验证码 API
+      const response = await apiService.sendSmsCode(phone.trim());
       
-      // 开始倒计时
-      setIsCodeSent(true);
-      setCountdown(60);
-      
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            setIsCodeSent(false);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      
-    } else {
-      alert(response.message.text || '发送验证码失败');
+      if (response.code === '0') {
+        // 保存加密的手机号，用于登录
+        setEncryptMobile(response.result.encrypt_mobile);
+        
+        // 开始倒计时
+        setIsCodeSent(true);
+        setCountdown(60);
+        
+        const timer = setInterval(() => {
+          setCountdown((prev) => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              setIsCodeSent(false);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        
+      } else {
+        alert(response.message.text || '发送验证码失败');
+      }
+    } catch (error) {
+      console.error('发送验证码失败:', error);
+      alert(error.response?.data?.message?.text || '网络错误，请稍后重试');
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   const handleLogin = async () => {
@@ -80,31 +85,37 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
     
     setIsLoading(true);
     
-    const response = await apiService.login(encryptMobile, verificationCode.trim());
-    
-    if (response.code === '0') {
-      const user = response.result.user;
+    try {
+      // 调用真实的登录 API
+      const response = await apiService.login(encryptMobile, verificationCode.trim());
       
-      // 调用登录成功回调
-      if (onLoginSuccess) {
-        onLoginSuccess(user);
+      if (response.code === '0') {
+        const user = response.result.user;
+        
+        // 调用登录成功回调
+        if (onLoginSuccess) {
+          onLoginSuccess(user);
+        }
+        
+        // 关闭弹窗
+        onClose();
+        
+        // 重置表单
+        setPhone('');
+        setVerificationCode('');
+        setEncryptMobile('');
+        setIsCodeSent(false);
+        setCountdown(0);
+        
+      } else {
+        alert(response.message.text || '登录失败');
       }
-      
-      // 关闭弹窗
-      onClose();
-      
-      // 重置表单
-      setPhone('');
-      setVerificationCode('');
-      setEncryptMobile('');
-      setIsCodeSent(false);
-      setCountdown(0);
-      
-    } else {
-      alert(response.message.text || '登录失败');
+    } catch (error) {
+      console.error('登录失败:', error);
+      alert(error.response?.data?.message?.text || '网络错误，请稍后重试');
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   return (
