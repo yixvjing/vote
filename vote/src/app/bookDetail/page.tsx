@@ -94,7 +94,7 @@ function BookDetailContent() {
             window.wx.updateTimelineShareData({
                 title: shareTitle,
                 link: window.location.href,
-                imgUrl: 'https://static.thefair.net.cn/activity/vote-book/images/share.jpg',
+                imgUrl: 'https://static.thefair.net.cn/activity/vote-book/share.jpg',
                 success: () => {
                     console.log('朋友圈分享成功');
                 },
@@ -108,7 +108,7 @@ function BookDetailContent() {
                 title: shareTitle,
                 desc: '快来参加LESS新世相出版奖悦已榜投票，让你喜欢的书被更多人看到!',
                 link: window.location.href,
-                imgUrl: 'https://static.thefair.net.cn/activity/vote-book/images/share.jpg',
+                imgUrl: 'https://static.thefair.net.cn/activity/vote-book/share.jpg',
                 success: () => {
                     console.log('好友分享成功');
                 },
@@ -346,7 +346,7 @@ function BookDetailContent() {
                 lineHeight : '32px',
                 textIndent : '-5px'
               }}>
-                {book.rank}
+                《{book.rank}》
               </div>
 
               <img 
