@@ -213,11 +213,6 @@ export default function Home() {
     }
   };
 
-  // 清除图书列表缓存并重新获取数据（完整刷新，仅在必要时使用）
-  const refreshBookList = async () => {
-    await fetchBookList();
-  };
-
   // 获取图书列表数据（第1页到第5页）
   const fetchBookList = async () => {
     try {
