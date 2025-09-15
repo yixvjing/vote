@@ -37,7 +37,15 @@ function BookDetailContent() {
   }, []);
 
   const handleBack = () => {
-    router.back();
+    // 检查是否有历史记录，如果没有则跳转到主页
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      // 获取当前路径，移除 /bookDetail 部分回到主页
+      const currentPath = window.location.pathname;
+      const basePath = currentPath.replace(/\/bookDetail\/?.*$/, '/');
+      window.location.href = basePath;
+    }
   };
 
   const handleVote = async () => {
