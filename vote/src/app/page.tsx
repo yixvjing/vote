@@ -30,6 +30,7 @@ export default function Home() {
   const [loginStatus, setLoginStatus] = useState(false); // 用户登录状态
   const [isEnd, setIsEnd] = useState(false); // 投票是否结束
   const [subText, setSubText] = useState<string>(''); // 弹窗副文本
+  const [isVoteTriggeredLogin, setIsVoteTriggeredLogin] = useState(false); // 记录是否是通过投票按钮触发的登录
 
   useEffect(() => {
     // 微信分享初始化
@@ -165,18 +166,139 @@ export default function Home() {
 
   const closeLoginModal = () => {
     setIsLoginModalOpen(false);
+    setIsVoteTriggeredLogin(false); // 重置投票触发登录的标记
   }
 
   const handleLoginSuccess = async (user: any) => {
     setLoginStatus(true); // 更新登录状态
+    setIsLoginModalOpen(false); // 关闭登录弹窗
+    
     fetchBaseInfo(); // 登录成功后获取基础信息
     const remainVoteNum = await fetchVoteInfo(); // 登录成功后获取投票信息
-    updateBookListVoteStatus(); // 登录成功后智能更新图书列表投票状态
     
-    // 登录后检查已选择的书籍数量是否超过剩余票数
-    if (selectedBooks.length > (remainVoteNum || 0)) {
-      setModalContent('每日最多投票10本，如需更换，请先取消已选中的图书。');
-      setIsCommonModalOpen(true);
+    // 如果是通过投票按钮触发的登录，登录成功后需要自动投票
+    if (isVoteTriggeredLogin) {
+      setIsVoteTriggeredLogin(false); // 重置标记
+      
+      // 重新获取图书列表以确保投票状态是最新的
+      try {
+        const allBooks: any[] = [];
+        
+        // 获取第1页到第5页的最新数据
+        for (let page = 1; page <= 5; page++) {
+          const response = await apiService.getBookList(page);
+          if (response.code === '0' && response.result?.item_list) {
+            allBooks.push(...response.result.item_list);
+          }
+        }
+        
+        if (allBooks.length > 0) {
+          setBookList(allBooks);
+          
+          // 清理localStorage中已投票的书籍
+          cleanupVotedBooksFromStorage(allBooks);
+          
+          // 等待状态更新后执行自动投票逻辑
+          setTimeout(async () => {
+            // 重新获取当前选择状态（可能已被cleanupVotedBooksFromStorage更新）
+            const currentSelectedBooks = typeof window !== 'undefined' 
+              ? JSON.parse(sessionStorage.getItem('selectedBooks') || '[]') 
+              : selectedBooks;
+            
+            // 检查是否有选中的书籍
+            if (currentSelectedBooks.length === 0) {
+              setModalContent('请先选择图书。');
+              setIsCommonModalOpen(true);
+              return;
+            }
+            
+            // 检查选中的书籍是否已经投过票
+            const votedSelectedBooks = currentSelectedBooks.filter((bookId: string) => {
+              const book = allBooks.find(b => b.id === bookId);
+              return book && book.voted;
+            });
+            
+            // 过滤掉已投票的书籍
+            const validSelectedBooks = currentSelectedBooks.filter((bookId: string) => {
+              const book = allBooks.find(b => b.id === bookId);
+              return book && !book.voted;
+            });
+            
+            if (votedSelectedBooks.length > 0) {
+              // 如果有已投票的书籍，更新选择状态
+              setSelectedBooks(validSelectedBooks);
+              if (typeof window !== 'undefined') {
+                sessionStorage.setItem('selectedBooks', JSON.stringify(validSelectedBooks));
+              }
+            }
+            
+            // 如果过滤后没有有效的书籍
+            if (validSelectedBooks.length === 0) {
+              if (votedSelectedBooks.length > 0) {
+                setModalContent('您选择的书籍已经投过票了。');
+              } else {
+                setModalContent('请先选择图书。');
+              }
+              setIsCommonModalOpen(true);
+              return;
+            }
+            
+            // 检查选择的书籍数量是否超过剩余票数
+            if (validSelectedBooks.length > (remainVoteNum || 0)) {
+              setModalContent('每日最多投票10本，如需更换，请先取消已选中的图书。');
+              setIsCommonModalOpen(true);
+              return;
+            }
+            
+            // 检查投票是否已结束
+            if (isEnd) {
+              setModalContent('投票已结束，感谢您的参与！');
+              setIsCommonModalOpen(true);
+              return;
+            }
+            
+            // 执行自动投票
+            try {
+              const response = await apiService.submitVoteResult(validSelectedBooks);
+              if (response.code === '0') {
+                // 清空选择的图书
+                setSelectedBooks([]);
+                // 清空 sessionStorage
+                if (typeof window !== 'undefined') {
+                  sessionStorage.removeItem('selectedBooks');
+                }
+                // 重新获取投票信息和图书列表
+                const newRemainVotes = await fetchVoteInfo();
+                updateBookListVoteStatus(); // 使用智能更新而不是完整刷新
+                setModalContent('投票成功');
+                setSubText('今日剩余投票数：' + (newRemainVotes !== undefined ? newRemainVotes : 0));
+                setIsCommonModalOpen(true);
+              } else {
+                console.error('投票失败:', response.message.text);
+                setModalContent('投票失败：' + response.message.text);
+                setIsCommonModalOpen(true);
+              }
+            } catch (error) {
+              console.error('投票网络错误:', error);
+              setModalContent('投票失败，请稍后重试');
+              setIsCommonModalOpen(true);
+            }
+          }, 300); // 稍长延迟确保状态已更新
+        }
+      } catch (error) {
+        console.error('获取图书列表失败:', error);
+        setModalContent('获取图书信息失败，请稍后重试');
+        setIsCommonModalOpen(true);
+      }
+    } else {
+      // 如果不是投票触发的登录，正常更新图书列表状态
+      await updateBookListVoteStatus();
+      
+      // 检查已选择的书籍数量是否超过剩余票数
+      if (selectedBooks.length > (remainVoteNum || 0)) {
+        setModalContent('每日最多投票10本，如需更换，请先取消已选中的图书。');
+        setIsCommonModalOpen(true);
+      }
     }
   }
 
@@ -190,7 +312,8 @@ export default function Home() {
     }
 
     if (!loginStatus) {
-      // 用户未登录，显示登录弹窗
+      // 用户未登录，标记是通过投票按钮触发的登录，然后显示登录弹窗
+      setIsVoteTriggeredLogin(true);
       openLoginModal();
       return;
     }

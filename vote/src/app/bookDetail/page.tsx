@@ -54,6 +54,7 @@ function BookDetailContent() {
   const [subText, setSubText] = useState<string>(''); // 弹窗副文本
 
   const [isCommonModalOpen, setIsCommonModalOpen] = useState(false); // 控制通用弹窗显示
+  const [isVoteTriggeredLogin, setIsVoteTriggeredLogin] = useState(false); // 记录是否是通过投票按钮触发的登录
 
   // 页面加载时获取图书详情和投票信息
 
@@ -172,6 +173,7 @@ function BookDetailContent() {
     
     // 检查登录状态，如果未登录则弹出登录窗口
     if (!loginStatus) {
+      setIsVoteTriggeredLogin(true); // 标记是通过投票按钮触发的登录
       setShowLoginModal(true);
       return;
     }
@@ -243,17 +245,65 @@ function BookDetailContent() {
   };
   
   // 处理登录成功
-  const handleLoginSuccess = (user: any) => {
+  const handleLoginSuccess = async (user: any) => {
     setLoginStatus(true);
     setShowLoginModal(false);
     // 登录成功后重新获取投票信息
-    fetchVoteInfo();
-    fetchBaseInfo();
+    const updatedRemainVotes = await fetchVoteInfo();
+    await fetchBaseInfo();
+    
+    // 如果是通过投票按钮触发的登录，登录成功后需要重新获取书籍信息并尝试投票
+    if (isVoteTriggeredLogin) {
+      setIsVoteTriggeredLogin(false); // 重置标记
+      
+      const bookId = searchParams.get('bookId');
+      if (bookId) {
+        try {
+          // 重新获取最新的书籍信息
+          const bookResponse = await apiService.getBookInfo(bookId);
+          if (bookResponse.code === '0') {
+            const updatedBook = bookResponse.result;
+            setBook(updatedBook);
+            
+            // 检查这本书是否已经投票，如果没有投票且还有剩余投票数，则自动投票
+            if (!updatedBook.voted && updatedRemainVotes > 0 && !isEnd) {
+              const response = await apiService.submitVoteResult([bookId]);
+              if (response.code === '0') {        
+                // 投票成功后重新获取图书详情
+                await fetchBookInfo(bookId);
+                
+                // 重新获取投票信息
+                const finalRemainVotes = await fetchVoteInfo();
+
+                setModalContent('投票成功');
+                setSubText('剩余票数：'+ finalRemainVotes);
+                setIsCommonModalOpen(true);
+              } else {
+                console.error('投票失败:', response.message.text);
+                setModalContent('投票失败：' + response.message.text);
+                setIsCommonModalOpen(true);
+              }
+            } else if (updatedBook.voted) {
+              setModalContent('您已经为这本书投过票了');
+              setIsCommonModalOpen(true);
+            } else if (updatedRemainVotes <= 0) {
+              setModalContent('今日票数已用完');
+              setIsCommonModalOpen(true);
+            }
+          }
+        } catch (error) {
+          console.error('登录后投票处理错误:', error);
+          setModalContent('投票失败，请稍后重试');
+          setIsCommonModalOpen(true);
+        }
+      }
+    }
   };
 
   // 关闭登录弹窗
   const handleCloseLoginModal = () => {
     setShowLoginModal(false);
+    setIsVoteTriggeredLogin(false); // 重置投票触发登录的标记
   };
 
   const fetchBookInfo = async (bookId: string) => {
@@ -346,7 +396,7 @@ function BookDetailContent() {
                 lineHeight : '32px',
                 textIndent : '-5px'
               }}>
-                {book.rank}
+                {book.rank.toString().padStart(2, '0')}
               </div>
 
               <img 
