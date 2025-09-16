@@ -677,7 +677,7 @@ export default function Home() {
 
         <div style={{ display: "flex", justifyContent: "center", alignItems: "start", width: "370px", margin: "0 auto" }}>
           <div>
-            <img src="https://static.thefair.net.cn/activity/vote-book/title.svg" alt="Description" />
+            <img src="https://static.thefair.net.cn/activity/vote-book/title-new.svg" alt="Description" />
             <p style={{ padding : "10px 14px", color : "#fff", fontSize : "12px", lineHeight : "25px" }}>
               我们与LESS品牌始终主张，阅读不应该只有功利目的，阅读的重要目的，可以是悦已。<br/>
               LESS新世相出版奖除了由专业评委选出值得推崇的图书和品牌，也希望与更多阅读者一起完成一次「共同行动」。<br/>
