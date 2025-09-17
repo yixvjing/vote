@@ -65,7 +65,7 @@ export default function Home() {
             window.wx.ready(() => {
                 // 朋友圈分享配置
                 window.wx.updateTimelineShareData({
-                    title: '在每一条小路上发现未来',
+                    title: '在每一条小路上发现未来：为这一年的好书投票',
                     link: window.location.href,
                     imgUrl: 'https://static.thefair.net.cn/activity/vote-book/share.jpg',
                     success: () => {
@@ -78,7 +78,7 @@ export default function Home() {
                 
                 // 微信好友分享配置
                 window.wx.updateAppMessageShareData({
-                    title: '在每一条小路上发现未来',
+                    title: '在每一条小路上发现未来：为这一年的好书投票',
                     desc: 'LESS新世相出版奖悦已榜投票通道',
                     link: window.location.href,
                     imgUrl: 'https://static.thefair.net.cn/activity/vote-book/share.jpg',

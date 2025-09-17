@@ -1,0 +1,2 @@
+
+f2f018d88f28837d0de3852e9f9e0157979719ee	{"key":"make-fetch-happen:request-cache:https://registry.npm.taobao.org/minizlib","integrity":null,"time":1757743317686,"size":"262","metadata":{"time":1757743317686,"url":"https://registry.npm.taobao.org/minizlib","reqHeaders":{"accept":"application/json"},"resHeaders":{"content-type":"text/html","date":"Sat, 13 Sep 2025 06:01:57 GMT","location":"https://registry.npmmirror.com/minizlib"},"options":{"compress":true},"status":301}}

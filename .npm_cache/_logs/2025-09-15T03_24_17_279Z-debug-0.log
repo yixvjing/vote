@@ -1,0 +1,33 @@
+0 verbose cli /Users/zhangpeiwen/.nvm/versions/node/v22.1.0/bin/node /Users/zhangpeiwen/.nvm/versions/node/v22.1.0/bin/npm
+1 info using npm@10.7.0
+2 info using node@v22.1.0
+3 silly config:load:file:/Users/zhangpeiwen/.nvm/versions/node/v22.1.0/lib/node_modules/npm/npmrc
+4 silly config:load:file:/Users/zhangpeiwen/vote-book-2025/.npmrc
+5 silly config:load:file:/Users/zhangpeiwen/.npmrc
+6 silly config:load:file:/Users/zhangpeiwen/.nvm/versions/node/v22.1.0/etc/npmrc
+7 verbose title npm run build:prod
+8 verbose argv "run" "build:prod"
+9 verbose logfile logs-max:10 dir:/Users/zhangpeiwen/vote-book-2025/.npm_cache/_logs/2025-09-15T03_24_17_279Z-
+10 verbose logfile /Users/zhangpeiwen/vote-book-2025/.npm_cache/_logs/2025-09-15T03_24_17_279Z-debug-0.log
+11 silly logfile done cleaning log files
+12 verbose stack Error: Could not read package.json: Error: ENOENT: no such file or directory, open '/Users/zhangpeiwen/vote-book-2025/package.json'
+12 verbose stack     at async open (node:internal/fs/promises:638:25)
+12 verbose stack     at async readFile (node:internal/fs/promises:1251:14)
+12 verbose stack     at async PackageJson.load (/Users/zhangpeiwen/.nvm/versions/node/v22.1.0/lib/node_modules/npm/node_modules/@npmcli/package-json/lib/index.js:129:31)
+12 verbose stack     at async PackageJson.normalize (/Users/zhangpeiwen/.nvm/versions/node/v22.1.0/lib/node_modules/npm/node_modules/@npmcli/package-json/lib/index.js:115:5)
+12 verbose stack     at async RunScript.run (/Users/zhangpeiwen/.nvm/versions/node/v22.1.0/lib/node_modules/npm/lib/commands/run-script.js:55:27)
+12 verbose stack     at async module.exports (/Users/zhangpeiwen/.nvm/versions/node/v22.1.0/lib/node_modules/npm/lib/cli/entry.js:74:5)
+13 verbose cwd /Users/zhangpeiwen/vote-book-2025
+14 verbose Darwin 23.6.0
+15 verbose node v22.1.0
+16 verbose npm  v10.7.0
+17 error code ENOENT
+18 error syscall open
+19 error path /Users/zhangpeiwen/vote-book-2025/package.json
+20 error errno -2
+21 error enoent Could not read package.json: Error: ENOENT: no such file or directory, open '/Users/zhangpeiwen/vote-book-2025/package.json'
+22 error enoent This is related to npm not being able to find a file.
+22 error enoent
+23 verbose exit -2
+24 verbose code -2
+25 error A complete log of this run can be found in: /Users/zhangpeiwen/vote-book-2025/.npm_cache/_logs/2025-09-15T03_24_17_279Z-debug-0.log

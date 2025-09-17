@@ -1,0 +1,2 @@
+
+8c6488a61ac49697a567b25b40ef9c3b22950a27	{"key":"make-fetch-happen:request-cache:https://registry.npm.taobao.org/typescript","integrity":null,"time":1757743314834,"size":"262","metadata":{"time":1757743314834,"url":"https://registry.npm.taobao.org/typescript","reqHeaders":{"accept":"application/json"},"resHeaders":{"content-type":"text/html","date":"Sat, 13 Sep 2025 06:01:54 GMT","location":"https://registry.npmmirror.com/typescript"},"options":{"compress":true},"status":301}}
