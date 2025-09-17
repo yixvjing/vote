@@ -107,7 +107,7 @@ function BookDetailContent() {
             // 微信好友分享配置
             window.wx.updateAppMessageShareData({
                 title: shareTitle,
-                desc: '快来参加LESS新世相出版奖悦已榜投票，让你喜欢的书被更多人看到!',
+                desc: '快来参加LESS新世相出版奖悦己榜投票，让你喜欢的书被更多人看到!',
                 link: window.location.href,
                 imgUrl: 'https://static.thefair.net.cn/activity/vote-book/share.jpg',
                 success: () => {

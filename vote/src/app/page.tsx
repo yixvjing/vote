@@ -79,7 +79,7 @@ export default function Home() {
                 // 微信好友分享配置
                 window.wx.updateAppMessageShareData({
                     title: '在每一条小路上发现未来：为这一年的好书投票',
-                    desc: 'LESS新世相出版奖悦已榜投票通道',
+                    desc: 'LESS新世相出版奖悦己榜投票通道',
                     link: window.location.href,
                     imgUrl: 'https://static.thefair.net.cn/activity/vote-book/share.jpg',
                     success: () => {
@@ -679,10 +679,10 @@ export default function Home() {
           <div>
             <img src="https://static.thefair.net.cn/activity/vote-book/title-new.svg" alt="Description" />
             <p style={{ padding : "10px 14px", color : "#fff", fontSize : "12px", lineHeight : "25px" }}>
-              我们与LESS品牌始终主张，阅读不应该只有功利目的，阅读的重要目的，可以是悦已。<br/>
+              我们与LESS品牌始终主张，阅读不应该只有功利目的，阅读的重要目的，可以是悦己。<br/>
               LESS新世相出版奖除了由专业评委选出值得推崇的图书和品牌，也希望与更多阅读者一起完成一次「共同行动」。<br/>
-              悦已榜的设立，是从专业评审提名的年度TOP100出版物中，邀请全民参与票选出10佳「年度榜单」。<br/>
-              榜单的评选标准只有一个：你心目中「悦已」的标准。你喜欢的，就是最好的。<br/><br/>
+              悦己榜的设立，是从专业评审提名的年度TOP100出版物中，邀请全民参与票选出10佳「年度榜单」。<br/>
+              榜单的评选标准只有一个：你心目中「悦己」的标准。你喜欢的，就是最好的。<br/><br/>
 
               我们邀请你参与投票，选出你最喜欢的10本书。如果哪本书为你带来过愉悦，请你支持它。
             </p>
