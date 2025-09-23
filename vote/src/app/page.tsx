@@ -118,7 +118,7 @@ export default function Home() {
 }, []);
 
   const handleBookClick = (bookId: string) => {
-    window.location.href=(`https://acth5.thefair.net.cn/vote-book/bookDetail/?bookId=${bookId}`)
+    window.location.href=(`${window.location.origin}/vote-book/bookDetail/?bookId=${bookId}`)
   };
 
   const pickBook = (e: React.MouseEvent, bookId: string) => {

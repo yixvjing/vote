@@ -156,7 +156,12 @@ function BookDetailContent() {
 
   const handleBack = () => {
     // 优先使用 router.back() 来保持 SPA 的特性，避免页面重新加载
-    window.location.href="https://acth5.thefair.net.cn/vote-book/"
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      // 如果没有历史记录，则跳转到主页
+      window.location.href = `${window.location.origin}/vote-book/`;
+    }
   };
 
   const handleVote = async () => {
